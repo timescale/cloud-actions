@@ -1,0 +1,60 @@
+
+name: 'Docker Build & Push'
+description: 'Use org secrets as credentials for ECR login and docker arguments'
+inputs:
+  aws-access-key-id:
+    description: 'AWS Key ID secret name'
+    required: true
+    default: ''
+  aws-secret-access-key:
+    description: 'AWS Access Key secret name'
+    required: true
+    default: ''
+  region:
+    description: 'AWS region'
+    required: true
+    default: 'us-east-1'    
+  registry:
+    description: 'ECR image repository'
+    required: true
+    default: ''
+  file:
+    description: 'Dockerfile path (e.g. build/Dockerfile)'
+    required: false
+    default: ./Dockerfile
+  target:
+    description: 'Dockerfile stage target'
+    required: false
+    default: ''
+  tags:
+    description: 'List of tags'
+    required: true
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login ECR
+      run: |
+          export AWS_ACCESS_KEY_ID=${{ inputs.aws-access-key-id }}
+          export AWS_SECRET_ACCESS_KEY=${{ inputs.aws-secret-access-key }}
+          export AWS_DEFAULT_REGION=${{ inputs.region }}
+          aws ecr get-login-password --region ${{ inputs.region }} | docker login \
+          --username AWS --password-stdin ${{ inputs.registry }}
+      shell: bash
+      
+    - name: Docker Deps
+      run: |
+        docker build -t ${{ inputs.registry }}:deps -f ${{ inputs.file }} .
+      shell: bash
+
+    - name: Docker Build
+      env:
+        target: ${{ inputs.target }}
+        tags: ${{ inputs.tags }}
+        registry: ${{ inputs.registry }}
+        dockerfile: ${{ inputs.file }}
+      run: |
+        chmod +x ${{ github.action_path }}/build-push.sh
+        ${{ github.action_path }}/build-push.sh
+      shell: bash
