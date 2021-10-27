@@ -36,7 +36,7 @@ jobs:
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
     - name: Docker | Build and Push
-      uses: ./actions/build-push
+      uses: timescale/actions-playground/build-push
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
