@@ -4,21 +4,15 @@ on:
     inputs:
       region:
         required: true
-        type: string
-        default: 'us-east-1'
-      tag:
+      tags:
         required: true
-        type: string
       registry:
         required: true
-        type: string
       dockerfile_path:
-        required: true
-        type: string
+        required: false
         default: build/Dockerfile
       docker_target:
         required: true
-        type: string
         default: 'release'
     secrets:
       API_TOKEN_GITHUB:
@@ -48,7 +42,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
         region: us-east-1
         tags: |
-          ${{ env.REGISTRY }}:${{ inputs.tag }}
+          ${{ inputs.tags }}
         registry: ${{ env.REGISTRY }}
         target: ${{ inputs.release }}
         file: ${{ inputs.dockerfile_path }}

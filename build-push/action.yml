@@ -1,35 +1,30 @@
 
 name: 'Docker Build & Push'
-description: 'Use org secrets as credentials for ECR login and docker arguments'
+description: 'Performs an ECR login and docker build/push after'
 inputs:
   aws-access-key-id:
     description: 'AWS Key ID secret name'
     required: true
-    default: ''
   aws-secret-access-key:
     description: 'AWS Access Key secret name'
     required: true
-    default: ''
   region:
     description: 'AWS region'
     required: true
-    default: 'us-east-1'    
   registry:
     description: 'ECR image repository'
     required: true
-    default: ''
   file:
     description: 'Dockerfile path (e.g. build/Dockerfile)'
     required: false
-    default: ./Dockerfile
+    default: build/Dockerfile
   target:
     description: 'Dockerfile stage target'
     required: false
-    default: ''
+    default: 'release'
   tags:
     description: 'List of tags'
     required: true
-    default: ''
 
 runs:
   using: "composite"
