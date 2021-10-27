@@ -4,21 +4,33 @@ on:
     inputs:
       region:
         required: true
+        type: string
+
       tags:
         required: true
+        type: string
+
       registry:
         required: true
+        type: string
+
       dockerfile_path:
         required: false
+        type: string
         default: build/Dockerfile
+
       docker_target:
         required: true
+        type: string
         default: 'release'
+    
     secrets:
       API_TOKEN_GITHUB:
         required: true
+
       ORG_AWS_ACCESS_KEY_ID:
         required: true
+        
       ORG_AWS_SECRET_ACCESS_KEY:
         required: true
       
