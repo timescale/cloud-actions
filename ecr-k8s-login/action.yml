@@ -1,0 +1,41 @@
+name: 'ECR & K8s login'
+description: 'Use org secrets as credentials for ECR login and kubeconfig setup'
+inputs:
+  aws-access-key-id:
+    description: 'AWS Key ID secret name'
+    required: true
+    default: ''
+  aws-secret-access-key:
+    description: 'AWS Access Key secret name'
+    required: true
+    default: ''
+  env:
+    description: 'Timescale Cloud env'
+    required: true
+    default: ''
+  regions:
+    description: 'Timescale Cloud region'
+    required: true
+    default: 'us-east-1'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login ECR
+      # NOTE WELL: the ECR region is hard-coded to us-east-1 as this is unlikely to change.
+      # If there is ever actually a need to change it, let's use a dedicated `ecr-region` var
+      # to accept this config to avoid conflict with our `env` & `region` K8s cluster config.
+      run: |
+          export AWS_ACCESS_KEY_ID=${{ inputs.aws-access-key-id }}
+          export AWS_SECRET_ACCESS_KEY=${{ inputs.aws-secret-access-key }}
+          export AWS_DEFAULT_REGION='us-east-1'
+          aws ecr get-login-password --region 'us-east-1' | docker login \
+          --username AWS --password-stdin 142548018081.dkr.ecr.us-east-1.amazonaws.com
+      shell: bash
+    - name: Setup kubeconfig file
+      run: |
+          chmod +x ${{ github.action_path }}/kubeconfig.sh
+          for region in ${{ inputs.regions }};do
+            INPUT_ENV=${{ inputs.env }} INPUT_REGION=${region} ${{ github.action_path }}/kubeconfig.sh
+          done
+      shell: bash

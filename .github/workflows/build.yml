@@ -1,0 +1,52 @@
+name: Build Docker
+on:
+  workflow_call:
+    inputs:
+      region:
+        required: true
+        type: string
+      tags:
+        required: true
+        type: string
+      registry:
+        required: true
+        type: string
+      dockerfile_path:
+        required: false
+        type: string
+        default: build/Dockerfile
+      docker_target:
+        required: true
+        type: string
+        default: 'release'
+    
+    secrets:
+      API_TOKEN_GITHUB:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      
+jobs:
+  release:
+    name: Build Docker
+    runs-on: non-prod
+    steps:
+    - name: Setup | Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+        token: ${{ secrets.API_TOKEN_GITHUB }}
+
+    - name: Docker | Build and Push
+      uses: timescale/cloud-actions/build-push@v1.1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        region: us-east-1
+        tags: |
+          ${{ inputs.tags }}
+        registry: ${{ inputs.registry }}
+        target: ${{ inputs.release }}
+        file: ${{ inputs.dockerfile_path }}

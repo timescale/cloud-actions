@@ -1,2 +1,3 @@
-# actions-playground
-POC for cloud public actoins
+# cloud-actions
+
+Timescale cloud playground for GH Actions and shared workflows.
