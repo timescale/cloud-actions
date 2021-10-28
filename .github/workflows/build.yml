@@ -46,7 +46,7 @@ jobs:
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
     - name: Docker | Build and Push
-      uses: timescale/cloud-actions/build-push@v1
+      uses: timescale/cloud-actions/build-push@v1.1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
