@@ -1,2 +1,2 @@
 # cloud-actions
-POC for cloud public actoins
+cloud public actions
