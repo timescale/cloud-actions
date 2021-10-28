@@ -9,7 +9,7 @@ on:
         required: true
         type: string
         default: 'us-east-1'
-      tag:
+      tags:
         required: true
         type: string
       registry:
