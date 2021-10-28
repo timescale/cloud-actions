@@ -38,8 +38,6 @@ jobs:
   release:
     name: Build Docker
     runs-on: non-prod
-    env:
-      REGISTRY: ${{ inputs.registry }}
     steps:
     - name: Setup | Checkout
       uses: actions/checkout@v2
@@ -55,6 +53,6 @@ jobs:
         region: us-east-1
         tags: |
           ${{ inputs.tags }}
-        registry: ${{ env.REGISTRY }}
+        registry: ${{ inputs.registry }}
         target: ${{ inputs.release }}
         file: ${{ inputs.dockerfile_path }}
