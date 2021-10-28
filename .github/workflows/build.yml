@@ -28,10 +28,10 @@ on:
       API_TOKEN_GITHUB:
         required: true
 
-      ORG_AWS_ACCESS_KEY_ID:
+      AWS_ACCESS_KEY_ID:
         required: true
-        
-      ORG_AWS_SECRET_ACCESS_KEY:
+
+      AWS_SECRET_ACCESS_KEY:
         required: true
       
 jobs:
@@ -48,10 +48,10 @@ jobs:
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
     - name: Docker | Build and Push
-      uses: timescale/actions-playground/build-push@v1
+      uses: timescale/cloud-actions/build-push@v1
       with:
-        aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         region: us-east-1
         tags: |
           ${{ inputs.tags }}
