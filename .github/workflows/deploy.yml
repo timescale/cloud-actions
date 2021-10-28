@@ -1,0 +1,58 @@
+name: Deploy
+on:
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+        default: 'us-east-1'
+      tag:
+        required: true
+        type: string
+      registry:
+        required: true
+        type: string
+      chart_name:
+        required: true
+        type: string
+    secrets:
+      API_TOKEN_GITHUB:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      KUBECONFIG:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.env }}@${{ inputs.tag }}
+    runs-on: ${{ inputs.env }}
+    steps:
+
+    - name: Setup | Checkout submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+        token: ${{ secrets.API_TOKEN_GITHUB }}
+
+    - name: Login to ECR and setup kubeconfig
+      uses: timescale/cloud-actions/ecr-k8s-login
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG }}
+        aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
+        region: ${{ inputs.region }}
+        env:  ${{ inputs.env }}
+
+    - name: Helm Upgrade
+      run: |
+        helm upgrade ${{ inputs.chart_name }} chart --install --wait --atomic --cleanup-on-fail \
+          --kubeconfig=./kubeconfig --namespace=savannah-system \
+          --values=./chart/values/${{ inputs.env }}.yaml \
+          --set-string imageName=${{ inputs.registry }} \
+          --set-string imageTag=${{ inputs.tag }}
