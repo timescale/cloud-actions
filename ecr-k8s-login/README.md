@@ -5,11 +5,12 @@ credentials.
 - How to use it:
 ```yaml
     - name: Login to ECR and setup kubeconfig
-      uses: ./actions/ecr-k8s-login
+      uses: timescale/cloud-actions/ecr-k8s-login@main
       env:
         ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }} #REQUIRED
         ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }} #REQUIRED
         ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }} #REQUIRED
+        [...] # All the kubeconfig secrets
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }} #REQUIRED
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }} #REQUIRED

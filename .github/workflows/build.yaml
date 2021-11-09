@@ -5,6 +5,7 @@ on:
       region:
         required: true
         type: string
+        default: 'us-east-1'
       tags:
         required: true
         type: string
@@ -27,7 +28,7 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      
+
 jobs:
   release:
     name: Build Docker
@@ -40,7 +41,7 @@ jobs:
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
     - name: Docker | Build and Push
-      uses: timescale/cloud-actions/build-push@v1.1
+      uses: timescale/cloud-actions/build-push@main
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

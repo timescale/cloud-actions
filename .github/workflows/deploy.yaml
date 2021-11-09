@@ -124,8 +124,8 @@ jobs:
       run: |
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
           region_values=''
-          if [[ -e "./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml" ]]; then
-            region_values=--values=./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml
+          if [[ -e "./chart/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
+            region_values=--values=./chart/values/${{ inputs.env }}-${{ matrix.region }}.yaml
           fi
           helm upgrade ${{ inputs.chart_name }} chart --install --wait --atomic --cleanup-on-fail \
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \

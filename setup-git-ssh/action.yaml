@@ -1,0 +1,23 @@
+name: 'Setup Git with SSH'
+description: 'Setup a ssh key for remotely accessing a repository'
+inputs:
+  ssh-key:
+    description: 'ssh key path'
+    required: false
+    default: './deploy/deploy-key'
+runs:
+  using: "composite"
+  steps:
+    - name: Add ssh key
+      run: |
+        sudo apt-get install git openssh-client gcc g++ -y 
+        mkdir -p /home/runner/.ssh
+        cp ${{ inputs.ssh-key }} /home/runner/.ssh/id_rsa
+        sudo chmod 0600 /home/runner/.ssh/id_rsa
+        touch /home/runner/.ssh/known_hosts && ssh-keyscan -t rsa github.com > /home/runner/.ssh/known_hosts
+      shell: bash
+    - name: Configure git for ssh
+      run: |
+        > /home/runner/.gitconfig
+        git config --global --add url."git@github.com:timescale/".insteadOf "https://github.com/timescale/"
+      shell: bash

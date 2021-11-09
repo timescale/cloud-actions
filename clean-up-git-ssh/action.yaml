@@ -1,0 +1,11 @@
+name: 'Clean up gitconfig and ssh'
+description: 'Clean up the runner global gitconfig and .ssh folder'
+runs:
+  using: "composite"
+  steps:
+    - name: Recreate .gitconfig and clean up ssh
+      run: |
+        > /home/runner/.gitconfig
+        git config --global --add url."https://github.com/timescale/".insteadOf "git@github.com:timescale/"
+        sudo rm -rf /home/runner/.ssh
+      shell: bash

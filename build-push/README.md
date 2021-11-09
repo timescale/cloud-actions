@@ -4,7 +4,7 @@ Build & Push Docker Images.
 - How to use it:
 ```yaml
     - name: Build using a tag
-      uses: timescale/cloud-actions/build-push
+      uses: timescale/cloud-actions/build-push@main
       with:
         region: us-east-1 #OPTIONAL (Default to us-east-1)
         tags: | #REQUIRED
