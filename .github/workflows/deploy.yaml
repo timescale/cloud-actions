@@ -32,15 +32,19 @@ on:
       ORG_KUBECONFIG_DEV:
         required: true
       ORG_KUBECONFIG_DEV_EU_WEST_1:
-        required: true
+        required: false
+        default: ''
       ORG_KUBECONFIG_DEV_US_WEST_2:
-        required: true
+        required: false
+        default: ''
       ORG_KUBECONFIG_PROD:
         required: true
       ORG_KUBECONFIG_PROD_EU_WEST_1:
-        required: true
+        required: false
+        default: ''
       ORG_KUBECONFIG_PROD_US_WEST_2:
-        required: true
+        required: false
+        default: ''
       ORG_KUBECONFIG_STAGE:
         required: true
 
