@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       region:
-        required: true
+        required: false
         type: string
         default: 'us-east-1'
       tags:
@@ -17,9 +17,9 @@ on:
         type: string
         default: build/Dockerfile
       docker_target:
-        required: true
+        required: false
         type: string
-        default: 'release'
+        default: ''
     
     secrets:
       API_TOKEN_GITHUB:
@@ -45,7 +45,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        region: us-east-1
+        region: ${{ inputs.region }}
         tags: |
           ${{ inputs.tags }}
         registry: ${{ inputs.registry }}

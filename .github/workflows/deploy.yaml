@@ -6,7 +6,7 @@ on:
         required: true
         type: string
       region:
-        required: true
+        required: false
         type: string
         default: 'us-east-1'
       tag:
@@ -33,18 +33,14 @@ on:
         required: true
       ORG_KUBECONFIG_DEV_EU_WEST_1:
         required: false
-        default: ''
       ORG_KUBECONFIG_DEV_US_WEST_2:
         required: false
-        default: ''
       ORG_KUBECONFIG_PROD:
         required: true
       ORG_KUBECONFIG_PROD_EU_WEST_1:
         required: false
-        default: ''
       ORG_KUBECONFIG_PROD_US_WEST_2:
         required: false
-        default: ''
       ORG_KUBECONFIG_STAGE:
         required: true
 
