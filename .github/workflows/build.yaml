@@ -49,5 +49,5 @@ jobs:
         tags: |
           ${{ inputs.tags }}
         registry: ${{ inputs.registry }}
-        target: ${{ inputs.release }}
+        target: ${{ inputs.docker_target }}
         file: ${{ inputs.dockerfile_path }}
