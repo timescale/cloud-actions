@@ -1,0 +1,24 @@
+name: Workflow linter
+on:
+  push:
+    paths:
+      - '.github/workflows/*'
+
+jobs:
+  workflow-linter:
+    runs-on: ubuntu-latest
+    name: Workflow linter
+    steps:
+
+    - name: Setup | Checkout submodules
+      uses: actions/checkout@v2
+
+    - name: Get modified files
+      id: files
+      uses: jitterbit/get-changed-files@v1
+
+    - name: Download action linter
+      run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+
+    - name: Run action linter
+      run: ./actionlint -oneline ${{ steps.files.outputs.all }}
