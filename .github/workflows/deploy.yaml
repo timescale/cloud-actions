@@ -139,4 +139,5 @@ jobs:
             ${region_values} \
             --set-string imageName=${{ inputs.registry }} \
             --set-string imageTag=${{ inputs.tag }} \
-            ${{ inputs.helm_ext_args }
+            ${{ inputs.helm_ext_args }}
+
