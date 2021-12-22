@@ -16,9 +16,10 @@ jobs:
     - name: Get modified files
       id: files
       uses: jitterbit/get-changed-files@v1
+      continue-on-error: true
 
     - name: Download action linter
       run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 
     - name: Run action linter
-      run: ./actionlint -oneline ${{ steps.files.outputs.all }}
+      run: ./actionlint -oneline -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted' ${{ steps.files.outputs.all }} 

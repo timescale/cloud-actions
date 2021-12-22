@@ -5,48 +5,65 @@ on:
       env:
         required: true
         type: string
+        description: 'Kubernetes cluster environment'
       region:
         required: false
         type: string
         default: 'us-east-1'
+        description: 'AWS region'
       tag:
         required: true
         type: string
+        description: 'Image tag (semVer)'
       registry:
         required: true
         type: string
+        description: 'Image registry name'
       chart_name:
         required: true
         type: string
+        description: 'Helm chart name'
       chart_namespace:
         required: true
         type: string
+        description: 'Helm chart namespace'
       helm_ext_args:
         required: false
         type: string
         default: ''
+        description: 'Extra arguments for helm-update command'
 
     secrets:
       API_TOKEN_GITHUB:
         required: true
+        description: 'Github token hash'
       ORG_AWS_ACCESS_KEY_ID:
         required: true
+        description: 'AWS access key id'
       ORG_AWS_SECRET_ACCESS_KEY:
         required: true
+        description: 'AWS secret access key id'
       ORG_KUBECONFIG_DEV:
         required: true
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_DEV_EU_WEST_1:
         required: false
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_DEV_US_WEST_2:
         required: false
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_PROD:
         required: true
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_PROD_EU_WEST_1:
         required: false
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_PROD_US_WEST_2:
         required: false
+        description: 'Kubeconfig secret'
       ORG_KUBECONFIG_STAGE:
         required: true
+        description: 'Kubeconfig secret'
 
 jobs:
   # Deploy by one region
