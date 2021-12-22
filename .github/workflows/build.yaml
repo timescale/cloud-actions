@@ -6,28 +6,36 @@ on:
         required: false
         type: string
         default: 'us-east-1'
+        description: 'AWS region'
       tags:
         required: true
         type: string
+        description: 'Docker build tags'
       registry:
         required: true
         type: string
+        description: 'Registry image name'
       dockerfile_path:
         required: false
         type: string
         default: build/Dockerfile
+        description: 'Dockerfile relative path'
       docker_target:
         required: false
         type: string
         default: ''
-    
+        description: 'Dockerfile target'
+
     secrets:
       API_TOKEN_GITHUB:
         required: true
+        description: 'Github token hash'
       AWS_ACCESS_KEY_ID:
         required: true
+        description: 'AWS access key id'
       AWS_SECRET_ACCESS_KEY:
         required: true
+        description: 'AWS secret access key'
 
 jobs:
   release:
