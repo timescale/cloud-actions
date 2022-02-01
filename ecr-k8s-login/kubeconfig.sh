@@ -21,4 +21,5 @@ if [ -z "${!ORG_KUBECONFIG}" ]; then
   exit 1
 fi
 
-base64 --decode <<<"${!ORG_KUBECONFIG}" >./kubeconfig_${INPUT_ENV}_${INPUT_REGION}
+# Keep the ./kubeconfig file generation for legacy reasons
+base64 --decode <<<"${!ORG_KUBECONFIG}" >./kubeconfig_${INPUT_ENV}_${INPUT_REGION} && cp ./kubeconfig_${INPUT_ENV}_${INPUT_REGION} ./kubeconfig
