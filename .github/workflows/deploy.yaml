@@ -123,7 +123,7 @@ jobs:
     if: inputs.region == 'all'
     strategy:
       matrix:
-        region: [us-east-1, us-west-2, eu-west-1]
+        region: [us-east-1, us-west-2, eu-west-1, eu-central-1]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
