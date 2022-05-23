@@ -122,6 +122,7 @@ jobs:
   deploy_all_regions:
     if: inputs.region == 'all'
     strategy:
+      max-parallel: 1
       matrix:
         region: [us-east-1, us-west-2, eu-west-1, eu-central-1]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
