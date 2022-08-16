@@ -124,8 +124,9 @@ jobs:
             ${region_values} \
             --set-string imageName=${{ inputs.registry }} \
             --set-string imageTag=${{ inputs.tag }} \
+            --set-string deployment.region=${{ inputs.region }} \
             ${{ inputs.helm_ext_args }}
-  
+
   # Deploy against all the regions specified in strategy.matrix.region
   deploy_all_regions:
     if: inputs.region == 'all'
@@ -177,5 +178,5 @@ jobs:
             ${region_values} \
             --set-string imageName=${{ inputs.registry }} \
             --set-string imageTag=${{ inputs.tag }} \
+            --set-string deployment.region=${{ matrix.region }} \
             ${{ inputs.helm_ext_args }}
-
