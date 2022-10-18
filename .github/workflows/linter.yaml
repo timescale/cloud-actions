@@ -2,24 +2,23 @@ name: Workflow linter
 on:
   push:
     paths:
-      - '.github/workflows/*'
+      - ".github/workflows/*"
 
 jobs:
   workflow-linter:
     runs-on: ubuntu-latest
     name: Workflow linter
     steps:
+      - name: Setup | Checkout submodules
+        uses: actions/checkout@v3
 
-    - name: Setup | Checkout submodules
-      uses: actions/checkout@v2
+      - name: Get modified files
+        id: files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
 
-    - name: Get modified files
-      id: files
-      uses: jitterbit/get-changed-files@v1
-      continue-on-error: true
+      - name: Download action linter
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 
-    - name: Download action linter
-      run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-
-    - name: Run action linter
-      run: ./actionlint -oneline -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted' ${{ steps.files.outputs.all }} 
+      - name: Run action linter
+        run: ./actionlint -oneline -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted' ${{ steps.files.outputs.all }}

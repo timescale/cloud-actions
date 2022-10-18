@@ -5,77 +5,77 @@ on:
       env:
         required: true
         type: string
-        description: 'Kubernetes cluster environment'
+        description: "Kubernetes cluster environment"
       region:
         required: false
         type: string
-        default: 'us-east-1'
-        description: 'AWS region'
+        default: "us-east-1"
+        description: "AWS region"
       tag:
         required: true
         type: string
-        description: 'Image tag (semVer)'
+        description: "Image tag (semVer)"
       registry:
         required: true
         type: string
-        description: 'Image registry name'
+        description: "Image registry name"
       chart_name:
         required: true
         type: string
-        description: 'Helm chart name'
+        description: "Helm chart name"
       chart_namespace:
         required: true
         type: string
-        description: 'Helm chart namespace'
+        description: "Helm chart namespace"
       helm_ext_args:
         required: false
         type: string
-        default: ''
-        description: 'Extra arguments for helm-update command'
+        default: ""
+        description: "Extra arguments for helm-update command"
 
     secrets:
       API_TOKEN_GITHUB:
         required: true
-        description: 'Github token hash'
+        description: "Github token hash"
       ORG_AWS_ACCESS_KEY_ID:
         required: true
-        description: 'AWS access key id'
+        description: "AWS access key id"
       ORG_AWS_SECRET_ACCESS_KEY:
         required: true
-        description: 'AWS secret access key id'
+        description: "AWS secret access key id"
       ORG_KUBECONFIG_DEV:
         required: true
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_DEV_EU_WEST_1:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_DEV_US_WEST_2:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_PROD:
         required: true
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_PROD_EU_WEST_1:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_PROD_US_WEST_2:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_PROD_EU_CENTRAL_1:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_DEV_EU_CENTRAL_1:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_STAGE:
         required: true
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
       ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2:
         required: false
-        description: 'Kubeconfig secret'
+        description: "Kubeconfig secret"
 
 jobs:
   # Deploy by one region
@@ -84,35 +84,34 @@ jobs:
     runs-on: ${{ inputs.env }}-${{ inputs.region }}
     name: Deploy ${{ inputs.env }}-${{ inputs.region }}@${{ inputs.tag }}
     steps:
+      - name: Setup | Checkout submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.API_TOKEN_GITHUB }}
 
-    - name: Setup | Checkout submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-        token: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: ECR and k8s login
+        uses: timescale/cloud-actions/ecr-k8s-login@main
+        env:
+          ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
+          ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
+          ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
+          ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
+          ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
+          ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
+          ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
+          ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
+          ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
+          ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
+          ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
+        with:
+          aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
+          regions: ${{ inputs.region }}
+          env: ${{ inputs.env }}
 
-    - name: ECR and k8s login
-      uses: timescale/cloud-actions/ecr-k8s-login@main
-      env:
-        ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
-        ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
-        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
-        ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
-        ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
-        ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
-        ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
-        ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
-        ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
-      with:
-        aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
-        regions: ${{ inputs.region }}
-        env:  ${{ inputs.env }}
-
-    - name: Helm Upgrade
-      run: |
+      - name: Helm Upgrade
+        run: |
           region_values=''
           if [[ -e "./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml" ]]; then
             region_values=--values=./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml
@@ -137,35 +136,34 @@ jobs:
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
+      - name: Setup | Checkout submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          token: ${{ secrets.API_TOKEN_GITHUB }}
 
-    - name: Setup | Checkout submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: true
-        token: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: ECR and k8s login
+        uses: timescale/cloud-actions/ecr-k8s-login@main
+        env:
+          ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
+          ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
+          ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
+          ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
+          ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
+          ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
+          ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
+          ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
+          ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
+          ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
+          ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
+        with:
+          aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
+          regions: ${{ matrix.region }}
+          env: ${{ inputs.env }}
 
-    - name: ECR and k8s login
-      uses: timescale/cloud-actions/ecr-k8s-login@main
-      env:
-        ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
-        ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
-        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
-        ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
-        ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
-        ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
-        ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
-        ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
-        ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
-      with:
-        aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
-        regions: ${{ matrix.region }}
-        env:  ${{ inputs.env }}
-
-    - name: Helm Upgrade
-      run: |
+      - name: Helm Upgrade
+        run: |
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
           region_values=''
           if [[ -e "./chart/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
