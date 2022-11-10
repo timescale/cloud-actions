@@ -19,6 +19,11 @@ on:
         required: true
         type: string
         description: 'Image registry name'
+      chart_path:
+        required: false
+        type: string
+        default: 'chart'
+        description: 'Helm chart path'
       chart_name:
         required: true
         type: string
@@ -32,6 +37,11 @@ on:
         type: string
         default: ''
         description: 'Extra arguments for helm-update command'
+      helm_inject_standard_deploy_values:
+        required: false
+        type: string
+        default: 'true'
+        description: 'Inject the standard imageName, imageTag, and deployment.region values via --set-string'
 
     secrets:
       API_TOKEN_GITHUB:
@@ -114,17 +124,19 @@ jobs:
     - name: Helm Upgrade
       run: |
           region_values=''
-          if [[ -e "./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml" ]]; then
-            region_values=--values=./chart/values/${{ inputs.env }}-${{ inputs.region }}.yaml
+          if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ inputs.region }}.yaml" ]]; then
+            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ inputs.region }}.yaml
           fi
-          helm upgrade ${{ inputs.chart_name }} chart --install --wait --atomic --cleanup-on-fail \
+          standard_values=''
+          if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
+          fi
+          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ inputs.region }} \
             --namespace=${{ inputs.chart_namespace }} \
-            --values=./chart/values/${{ inputs.env }}.yaml \
+            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             ${region_values} \
-            --set-string imageName=${{ inputs.registry }} \
-            --set-string imageTag=${{ inputs.tag }} \
-            --set-string deployment.region=${{ inputs.region }} \
+            ${standard_values} \
             ${{ inputs.helm_ext_args }}
 
   # Deploy against all the regions specified in strategy.matrix.region
@@ -168,15 +180,17 @@ jobs:
       run: |
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
           region_values=''
-          if [[ -e "./chart/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
-            region_values=--values=./chart/values/${{ inputs.env }}-${{ matrix.region }}.yaml
+          if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
+            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml
           fi
-          helm upgrade ${{ inputs.chart_name }} chart --install --wait --atomic --cleanup-on-fail \
+          standard_values=''
+          if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
+          fi
+          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
             --namespace=${{ inputs.chart_namespace }} \
-            --values=./chart/values/${{ inputs.env }}.yaml \
+            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             ${region_values} \
-            --set-string imageName=${{ inputs.registry }} \
-            --set-string imageTag=${{ inputs.tag }} \
-            --set-string deployment.region=${{ matrix.region }} \
+            ${standard_values} \
             ${{ inputs.helm_ext_args }}
