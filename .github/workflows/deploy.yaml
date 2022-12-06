@@ -185,7 +185,7 @@ jobs:
           fi
           standard_values=''
           if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
-            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ matrix.region }}"
           fi
           helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
