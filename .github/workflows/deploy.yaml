@@ -135,6 +135,7 @@ jobs:
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ inputs.region }} \
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
+            --timeout 10m \
             ${region_values} \
             ${standard_values} \
             ${{ inputs.helm_ext_args }}
@@ -191,6 +192,7 @@ jobs:
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
+            --timeout 10m \
             ${region_values} \
             ${standard_values} \
             ${{ inputs.helm_ext_args }}
