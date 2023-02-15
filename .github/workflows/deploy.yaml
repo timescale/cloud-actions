@@ -105,15 +105,12 @@ jobs:
       uses: timescale/cloud-actions/ecr-k8s-login@main
       env:
         ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
-        ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
         ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
         ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
         ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
         ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
-        ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
         ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
         ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
@@ -136,13 +133,13 @@ jobs:
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout 10m \
-            ${region_values} \
-            ${standard_values} \
+            "${region_values}" \
+            "${standard_values}" \
             ${{ inputs.helm_ext_args }}
 
-  # Deploy against all the regions specified in strategy.matrix.region
-  deploy_all_regions:
-    if: inputs.region == 'all'
+  # Prod - Deploy against all the regions specified in strategy.matrix.region
+  deploy_all_regions_prod:
+    if: inputs.region == 'all' && inputs.env == 'prod'
     strategy:
       max-parallel: 1
       matrix:
@@ -160,16 +157,10 @@ jobs:
     - name: ECR and k8s login
       uses: timescale/cloud-actions/ecr-k8s-login@main
       env:
-        ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
-        ORG_KUBECONFIG_DEV_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_WEST_1 }}
-        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
         ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
         ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
         ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
-        ORG_KUBECONFIG_STAGE: ${{ secrets.ORG_KUBECONFIG_STAGE }}
-        ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
         ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_DEV_AP_SOUTHEAST_2 }}
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
@@ -193,6 +184,55 @@ jobs:
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout 10m \
-            ${region_values} \
-            ${standard_values} \
+            "${region_values}" \
+            "${standard_values}" \
+            ${{ inputs.helm_ext_args }}
+
+# Dev - Deploy against all the regions specified in strategy.matrix.region
+  deploy_all_regions_dev:
+    if: inputs.region == 'all' && inputs.env == 'dev'
+    strategy:
+      max-parallel: 1
+      matrix:
+        region: [us-east-1, us-west-2, eu-central-1]
+    runs-on: ${{ inputs.env }}-${{ matrix.region }}
+    name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
+    steps:
+
+    - name: Setup | Checkout submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+        token: ${{ secrets.API_TOKEN_GITHUB }}
+
+    - name: ECR and k8s login
+      uses: timescale/cloud-actions/ecr-k8s-login@main
+      env:
+        ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
+        ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
+        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
+      with:
+        aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
+        regions: ${{ matrix.region }}
+        env:  ${{ inputs.env }}
+
+    - name: Helm Upgrade
+      run: |
+          echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
+          region_values=''
+          if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
+            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml
+          fi
+          standard_values=''
+          if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ matrix.region }}"
+          fi
+          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
+            --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
+            --namespace=${{ inputs.chart_namespace }} \
+            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
+            --timeout 10m \
+            "${region_values}" \
+            "${standard_values}" \
             ${{ inputs.helm_ext_args }}
