@@ -81,7 +81,7 @@ on:
         required: false
         description: 'Kubeconfig secret'
       ORG_KUBECONFIG_STAGE:
-        required: true
+        required: false
         description: 'Kubeconfig secret'
       ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2:
         required: false
