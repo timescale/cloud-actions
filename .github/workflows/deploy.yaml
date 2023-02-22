@@ -133,8 +133,8 @@ jobs:
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout 10m \
-            "${region_values}" \
-            "${standard_values}" \
+            ${region_values} \
+            ${standard_values} \
             ${{ inputs.helm_ext_args }}
 
   # Prod - Deploy against all the regions specified in strategy.matrix.region
@@ -184,8 +184,8 @@ jobs:
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout 10m \
-            "${region_values}" \
-            "${standard_values}" \
+            ${region_values} \
+            ${standard_values} \
             ${{ inputs.helm_ext_args }}
 
 # Dev - Deploy against all the regions specified in strategy.matrix.region
@@ -233,6 +233,6 @@ jobs:
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout 10m \
-            "${region_values}" \
-            "${standard_values}" \
+            ${region_values} \
+            ${standard_values} \
             ${{ inputs.helm_ext_args }}
