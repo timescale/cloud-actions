@@ -42,6 +42,11 @@ on:
         type: string
         default: 'true'
         description: 'Inject the standard imageName, imageTag, and deployment.region values via --set-string'
+      helm_timeout:
+        required: false
+        type: string
+        default: '5m'
+        description: 'Extra arguments to specify timeout for help upgrades'
 
     secrets:
       API_TOKEN_GITHUB:
@@ -132,7 +137,7 @@ jobs:
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ inputs.region }} \
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout 10m \
+            --timeout ${{ inputs.helm_timeout }} \
             ${region_values} \
             ${standard_values} \
             ${{ inputs.helm_ext_args }}
@@ -183,7 +188,7 @@ jobs:
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout 10m \
+            --timeout ${{ inputs.helm_timeout }} \
             ${region_values} \
             ${standard_values} \
             ${{ inputs.helm_ext_args }}
@@ -232,7 +237,7 @@ jobs:
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
             --namespace=${{ inputs.chart_namespace }} \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout 10m \
+            --timeout ${{ inputs.helm_timeout }} \
             ${region_values} \
             ${standard_values} \
             ${{ inputs.helm_ext_args }}
