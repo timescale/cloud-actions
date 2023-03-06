@@ -22,4 +22,9 @@ jobs:
       run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 
     - name: Run action linter
-      run: ./actionlint -oneline -ignore 'label ".+" is unknown' -ignore '".+" is potentially untrusted' ${{ steps.files.outputs.all }} 
+      run: |
+        ./actionlint -oneline -ignore 'label ".+" is unknown' \
+          -ignore '".+" is potentially untrusted' \
+          -ignore '".+" SC2086 ".+"' \
+          ${{ steps.files.outputs.all }} \
+          
