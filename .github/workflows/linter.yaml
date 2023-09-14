@@ -17,14 +17,10 @@ jobs:
       id: files
       uses: jitterbit/get-changed-files@v1
       continue-on-error: true
-
-    - name: Download action linter
-      run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-
-    - name: Run action linter
-      run: |
-        ./actionlint -oneline -ignore 'label ".+" is unknown' \
-          -ignore '".+" is potentially untrusted' \
-          -ignore '".+" SC2086 ".+"' \
-          ${{ steps.files.outputs.all }} \
+  
+    - uses: reviewdog/action-actionlint@v1
+      with: 
+        actionlint_flags: -config-file .github/actionlint.yaml
+        fail_on_error: true
+        level: error
           

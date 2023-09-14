@@ -133,22 +133,22 @@ jobs:
 
     - name: Helm Upgrade
       run: |
-          region_values=''
+        region_values=''
           if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ inputs.region }}.yaml" ]]; then
-            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ inputs.region }}.yaml
+            region_values=--values=./"${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ inputs.region }}".yaml
           fi
           standard_values=''
           if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
-            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
+            standard_values=--set-string imageName="${{ inputs.registry }}" --set-string imageTag="${{ inputs.tag }}" --set-string deployment.region="${{ inputs.region }}"
           fi
-          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
-            --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ inputs.region }} \
-            --namespace=${{ inputs.chart_namespace }} \
-            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout ${{ inputs.helm_timeout }} \
-            ${region_values} \
-            ${standard_values} \
-            ${{ inputs.helm_ext_args }}
+          helm upgrade "${{ inputs.chart_name }}" "${{ inputs.chart_path }}" --install --wait --atomic --cleanup-on-fail \
+            --kubeconfig="./kubeconfig_${{ inputs.env }}_${{ inputs.region }}" \
+            --namespace="${{ inputs.chart_namespace }}" \
+            --values="./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml" \
+            --timeout "${{ inputs.helm_timeout }}" \
+            "${region_values}" \
+            "${standard_values}" \
+            "${{ inputs.helm_ext_args }}"
 
   # Prod - Deploy against all the regions specified in strategy.matrix.region
   deploy_all_regions_prod:
@@ -156,7 +156,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2]
+        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2, ap-southeast-1]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
@@ -188,20 +188,20 @@ jobs:
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
           region_values=''
           if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
-            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml
+            region_values=--values=./"${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}".yaml
           fi
           standard_values=''
           if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
-            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ matrix.region }}"
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
           fi
-          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
-            --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
-            --namespace=${{ inputs.chart_namespace }} \
-            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout ${{ inputs.helm_timeout }} \
-            ${region_values} \
-            ${standard_values} \
-            ${{ inputs.helm_ext_args }}
+          helm upgrade "${{ inputs.chart_name }}" "${{ inputs.chart_path }}" --install --wait --atomic --cleanup-on-fail \
+            --kubeconfig="./kubeconfig_${{ inputs.env }}_${{ matrix.region }}" \
+            --namespace="${{ inputs.chart_namespace }}" \
+            --values="./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml" \
+            --timeout "${{ inputs.helm_timeout }}" \
+            "${region_values}" \
+            "${standard_values}" \
+            "${{ inputs.helm_ext_args }}"
 
 # Dev - Deploy against all the regions specified in strategy.matrix.region
   deploy_all_regions_dev:
@@ -237,17 +237,17 @@ jobs:
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
           region_values=''
           if [[ -e "./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml" ]]; then
-            region_values=--values=./${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}.yaml
+            region_values=--values=./"${{ inputs.chart_path }}/values/${{ inputs.env }}-${{ matrix.region }}".yaml
           fi
           standard_values=''
           if [[ "${{inputs.helm_inject_standard_deploy_values}}" == "true" ]]; then
-            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ matrix.region }}"
+            standard_values="--set-string imageName=${{ inputs.registry }} --set-string imageTag=${{ inputs.tag }} --set-string deployment.region=${{ inputs.region }}"
           fi
-          helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
-            --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ matrix.region }} \
-            --namespace=${{ inputs.chart_namespace }} \
-            --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
-            --timeout ${{ inputs.helm_timeout }} \
-            ${region_values} \
-            ${standard_values} \
-            ${{ inputs.helm_ext_args }}
+          helm upgrade "${{ inputs.chart_name }}" "${{ inputs.chart_path }}" --install --wait --atomic --cleanup-on-fail \
+            --kubeconfig="./kubeconfig_${{ inputs.env }}_${{ matrix.region }}" \
+            --namespace="${{ inputs.chart_namespace }}" \
+            --values="./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml" \
+            --timeout "${{ inputs.helm_timeout }}" \
+            "${region_values}" \
+            "${standard_values}" \
+            "${{ inputs.helm_ext_args }}"
