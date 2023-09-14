@@ -20,15 +20,7 @@ jobs:
   
     - uses: reviewdog/action-actionlint@v1
       with: 
-        actionlint_flags: -ignore SC2086 -config-file .github/actionlint.yaml
+        actionlint_flags: -config-file .github/actionlint.yaml
         fail_on_error: true
         level: error
-
-    #- name: Download action linter
-    #  run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-
-    - name: Run action linter
-      run: |
-        ./actionlint \
-          ${{ steps.files.outputs.all }}
           

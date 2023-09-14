@@ -40,7 +40,7 @@ on:
 jobs:
   release:
     name: Build Docker
-    runs-on: "non-prod"
+    runs-on: non-prod
     steps:
     - name: Setup | Checkout
       uses: actions/checkout@v3
