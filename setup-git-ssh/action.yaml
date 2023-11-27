@@ -10,7 +10,6 @@ runs:
   steps:
     - name: Add ssh key
       run: |
-        sudo apt-get install git openssh-client gcc g++ -y 
         mkdir -p /home/runner/.ssh
         cp ${{ inputs.ssh-key }} /home/runner/.ssh/id_rsa
         sudo chmod 0600 /home/runner/.ssh/id_rsa
