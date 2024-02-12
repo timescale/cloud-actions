@@ -97,6 +97,9 @@ on:
       ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1:
         required: false
         description: 'Kubeconfig secret'
+      ORG_KUBECONFIG_PROD_AP_NORTHEAST_1:
+        required: false
+        description: 'Kubeconfig secret'
 
 jobs:
   # Deploy by one region
@@ -125,6 +128,7 @@ jobs:
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
         ORG_KUBECONFIG_PROD_US_EAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_EAST_2 }}
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1 }}
+        ORG_KUBECONFIG_PROD_AP_NORTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_NORTHEAST_1 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
@@ -177,6 +181,7 @@ jobs:
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
         ORG_KUBECONFIG_PROD_US_EAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_EAST_2 }}
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1 }}
+        ORG_KUBECONFIG_PROD_AP_NORTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_NORTHEAST_1 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
