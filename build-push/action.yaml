@@ -37,7 +37,7 @@ runs:
           aws ecr get-login-password --region ${{ inputs.region }} | docker login \
           --username AWS --password-stdin ${{ inputs.registry }}
       shell: bash
-      
+
     - name: Docker Deps
       run: |
         docker build -t ${{ inputs.registry }}:deps -f ${{ inputs.file }} .

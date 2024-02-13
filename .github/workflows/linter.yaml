@@ -11,16 +11,16 @@ jobs:
     steps:
 
     - name: Setup | Checkout submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Get modified files
       id: files
       uses: jitterbit/get-changed-files@v1
       continue-on-error: true
-  
+
     - uses: reviewdog/action-actionlint@v1
-      with: 
+      with:
         actionlint_flags: --ignore SC2086 --config-file .github/actionlint.yaml
         fail_on_error: true
         level: error
-          
+
