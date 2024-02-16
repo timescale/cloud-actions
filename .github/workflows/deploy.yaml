@@ -164,7 +164,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2, ap-southeast-1]
+        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2, ap-southeast-1, ap-northeast-1, eu-west-2]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
