@@ -103,6 +103,9 @@ on:
       ORG_KUBECONFIG_PROD_EU_WEST_2:
         required: false
         description: 'Kubeconfig secret'
+      ORG_KUBECONFIG_PROD_CA_CENTRAL_1:
+        required: false
+        description: 'Kubeconfig secret'
 
 jobs:
   # Deploy by one region
@@ -133,6 +136,7 @@ jobs:
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1 }}
         ORG_KUBECONFIG_PROD_AP_NORTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_NORTHEAST_1 }}
         ORG_KUBECONFIG_PROD_EU_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_2 }}
+        ORG_KUBECONFIG_PROD_CA_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_CA_CENTRAL_1 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
@@ -164,7 +168,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2, ap-southeast-1]
+        region: [us-east-1, us-west-2, eu-west-1, eu-central-1, ap-southeast-2, us-east-2, ap-southeast-1, ap-northeast-1, eu-west-2, ca-central-1]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
@@ -187,6 +191,7 @@ jobs:
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_1 }}
         ORG_KUBECONFIG_PROD_AP_NORTHEAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_NORTHEAST_1 }}
         ORG_KUBECONFIG_PROD_EU_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_2 }}
+        ORG_KUBECONFIG_PROD_CA_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_CA_CENTRAL_1 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
