@@ -38,6 +38,11 @@ runs:
           --username AWS --password-stdin ${{ inputs.registry }}
       shell: bash
 
+    - name: Setup git PAT override
+      run: |
+        git config --global --add url."https://${{ secrets.ORG_AUTOMATION_TOKEN }}:@github".insteadOf ssh://git@github
+      shell: bash
+
     - name: Docker Deps
       run: |
         docker build -t ${{ inputs.registry }}:deps -f ${{ inputs.file }} .
