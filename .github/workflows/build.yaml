@@ -25,6 +25,11 @@ on:
         type: string
         default: ''
         description: 'Dockerfile target'
+      docker_build_args:
+        required: false
+        type: string
+        default: ''
+        description: 'Additional docker build args'
 
     secrets:
       API_TOKEN_GITHUB:
@@ -49,7 +54,7 @@ jobs:
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
     - name: Docker | Build and Push
-      uses: timescale/cloud-actions/build-push@main
+      uses: timescale/cloud-actions/build-push@allow-git-ssh
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -59,3 +64,4 @@ jobs:
         registry: ${{ inputs.registry }}
         target: ${{ inputs.docker_target }}
         file: ${{ inputs.dockerfile_path }}
+        docker-build-args: ${{ inputs.docker_build_args }}
