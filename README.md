@@ -19,7 +19,7 @@ on:
         required: true
         default: ''
       region:
-        description: 'AWS Region: all|us-east-1|eu-west-1|us-west-2'
+        description: 'AWS Region: all|us-east-1|eu-central-1'
         required: true
         default: 'us-east-1'
 
