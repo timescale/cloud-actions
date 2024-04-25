@@ -228,7 +228,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        region: [us-east-1, us-west-2, eu-central-1]
+        region: [us-east-1, eu-central-1]
     runs-on: ${{ inputs.env }}-${{ matrix.region }}
     name: Deploy-all  ${{ inputs.env }}-${{ matrix.region }}@${{ inputs.tag }}
     steps:
@@ -244,7 +244,6 @@ jobs:
       env:
         ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
         ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
-        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
