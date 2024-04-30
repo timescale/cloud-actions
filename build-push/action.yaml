@@ -38,11 +38,6 @@ runs:
           --username AWS --password-stdin ${{ inputs.registry }}
       shell: bash
 
-    - name: Docker Deps
-      run: |
-        docker build -t ${{ inputs.registry }}:deps -f ${{ inputs.file }} .
-      shell: bash
-
     - name: Docker Build
       env:
         target: ${{ inputs.target }}
