@@ -5,7 +5,7 @@ runs:
   steps:
     - name: Recreate .gitconfig and clean up ssh
       run: |
-        > /home/runner/.gitconfig
+        > /runner/.gitconfig
         git config --global --add url."https://github.com/timescale/".insteadOf "git@github.com:timescale/"
-        sudo rm -rf /home/runner/.ssh
+        sudo rm -rf /runner/.ssh
       shell: bash
