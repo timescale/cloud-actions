@@ -25,6 +25,11 @@ on:
         type: string
         default: ''
         description: 'Dockerfile target'
+      runner:
+        required: false
+        type: string
+        default: 'non-prod'
+        description: 'Runner type'
 
     secrets:
       API_TOKEN_GITHUB:
@@ -40,7 +45,7 @@ on:
 jobs:
   release:
     name: Build Docker
-    runs-on: non-prod
+    runs-on: ${{ inputs.runner }}
     steps:
     - name: Setup | Checkout
       uses: actions/checkout@v4
