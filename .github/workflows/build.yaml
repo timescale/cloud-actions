@@ -129,6 +129,7 @@ jobs:
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
+          rm -rf /tmp/digests/*
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"          
       
@@ -145,6 +146,11 @@ jobs:
     needs:
       - mp-build
     steps:
+      - name: Cleanup digests path
+        run: |
+          mkdir -p /tmp/digests
+          rm -rf /tmp/digests/*
+          
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
