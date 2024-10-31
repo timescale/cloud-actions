@@ -5,80 +5,78 @@ on:
       region:
         required: false
         type: string
-        default: 'us-east-1'
-        description: 'AWS region'
+        default: "us-east-1"
+        description: "AWS region"
       tags:
         required: true
         type: string
-        description: 'Docker build tags'
+        description: "Docker build tags"
       registry:
         required: true
         type: string
-        description: 'Registry image name'
+        description: "Registry image name"
       dockerfile_path:
         required: false
         type: string
         default: build/Dockerfile
-        description: 'Dockerfile relative path'
+        description: "Dockerfile relative path"
       docker_target:
         required: false
         type: string
-        default: ''
-        description: 'Dockerfile target'
+        default: ""
+        description: "Dockerfile target"
       runner:
         required: false
         type: string
-        default: 'non-prod'
-        description: 'Runner type'
+        default: "non-prod"
+        description: "Runner type"
       multiplatform:
         required: false
         type: boolean
         default: false
-        description: 'Multiplatform build'
-
+        description: "Multiplatform build"
     secrets:
       API_TOKEN_GITHUB:
         required: true
-        description: 'Github token hash'
+        description: "Github token hash"
       AWS_ACCESS_KEY_ID:
         required: true
-        description: 'AWS access key id'
+        description: "AWS access key id"
       AWS_SECRET_ACCESS_KEY:
         required: true
-        description: 'AWS secret access key'
-
+        description: "AWS secret access key"
 jobs:
   release:
     name: Build Docker
     if: ${{ ! inputs.multiplatform }}
     runs-on: ${{ inputs.runner }}
     steps:
-    - name: Setup | Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        token: ${{ secrets.API_TOKEN_GITHUB }}
+      - name: Setup | Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.API_TOKEN_GITHUB }}
 
-    - name: Docker | Build and Push
-      uses: timescale/cloud-actions/build-push@main
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        region: ${{ inputs.region }}
-        tags: |
-          ${{ inputs.tags }}
-        registry: ${{ inputs.registry }}
-        target: ${{ inputs.docker_target }}
-        file: ${{ inputs.dockerfile_path }}
+      - name: Docker | Build and Push
+        uses: timescale/cloud-actions/build-push@main
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ inputs.region }}
+          tags: |
+            ${{ inputs.tags }}
+          registry: ${{ inputs.registry }}
+          target: ${{ inputs.docker_target }}
+          file: ${{ inputs.dockerfile_path }}
 
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
     if: ${{ inputs.multiplatform }}
-    runs-on: [ "self-hosted", "${{ matrix.runs_on }}" ]
+    runs-on: ["self-hosted", "${{ matrix.runs_on }}"]
     strategy:
       fail-fast: false
       matrix:
-        platform: [ "amd64", "arm64" ]
+        platform: ["amd64", "arm64"]
         include:
           - platform: amd64
             runs_on: dev-us-east-1
@@ -87,11 +85,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Prepare
-        run: |
-          platform_slash_pair=linux/${{ matrix.platform }}
-          echo "PLATFORM_DASH_PAIR=${platform_slash_pair//\//-}" >> $GITHUB_ENV          
 
       - name: Docker meta
         id: meta
@@ -100,15 +93,15 @@ jobs:
           images: ${{ inputs.registry }}
           tags: |
             type=raw,value=${{ inputs.tags }}
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -123,24 +116,30 @@ jobs:
         with:
           context: .
           platforms: linux/${{ matrix.platform }}
+          target: ${{ inputs.docker_target }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ inputs.registry }},push-by-digest=true,name-canonical=true,push=true
-      
+          build-args: |
+            GOOS=linux
+            GOARCH=${{ matrix.platform }}
+            BPF_TARGET=${{ matrix.platform }}
+
       - name: Export digest
         run: |
-          mkdir -p /tmp/digests
           rm -rf /tmp/digests/*
+          mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"          
-      
+          export "IMAGE_DIGEST=${digest#sha256:}"
+          echo "IMAGE_DIGEST=${IMAGE_DIGEST}" >> $GITHUB_ENV
+          touch "/tmp/digests/${IMAGE_DIGEST}"
+
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ env.PLATFORM_DASH_PAIR }}
+          name: digests-${{ inputs.docker_target }}-${{ env.IMAGE_DIGEST }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
-
   merge:
     runs-on: ${{ inputs.runner }}
     needs:
@@ -150,17 +149,17 @@ jobs:
         run: |
           mkdir -p /tmp/digests
           rm -rf /tmp/digests/*
-          
+
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digests-${{ inputs.docker_target }}-*
           merge-multiple: true
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-  
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -168,9 +167,9 @@ jobs:
           images: ${{ inputs.registry }}
           tags: |
             type=raw,value=${{ inputs.tags }}
-      
+
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -178,13 +177,13 @@ jobs:
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
-      
+
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ inputs.registry }}@sha256:%s ' *)          
-      
+            $(printf '${{ inputs.registry }}@sha256:%s ' *)
+
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ inputs.registry }}:${{ inputs.tags }}
