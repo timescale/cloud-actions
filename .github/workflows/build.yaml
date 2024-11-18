@@ -115,6 +115,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ${{ inputs.dockerfile_path }}
           platforms: linux/${{ matrix.platform }}
           target: ${{ inputs.docker_target }}
           labels: ${{ steps.meta.outputs.labels }}
