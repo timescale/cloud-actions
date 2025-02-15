@@ -6,7 +6,11 @@ for tag in ${tags}; do
 
     # If there is a target we use it
     echo "Building ${registry}:${tag}"
-    [[ ${target} = '' ]] && docker build -t ${registry}:${tag} -f ${dockerfile} . || docker build -t ${registry}:${tag} --target ${target} -f ${dockerfile} .
+    if [[ ${target} = '' ]]; then
+        docker build --secret id=gh_token,env=gh_token -t ${registry}:${tag} -f ${dockerfile} .
+    else
+        docker build --secret id=gh_token,env=gh_token -t ${registry}:${tag} --target ${target} -f ${dockerfile} .
+    fi
     echo "Pushing ${registry}:${tag}"
     docker push ${registry}:${tag}
 done

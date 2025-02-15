@@ -68,6 +68,7 @@ jobs:
           registry: ${{ inputs.registry }}
           target: ${{ inputs.docker_target }}
           file: ${{ inputs.dockerfile_path }}
+          gh-token: ${{ secrets.API_TOKEN_GITHUB }}
 
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
@@ -123,6 +124,8 @@ jobs:
           target: ${{ inputs.docker_target }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ inputs.registry }},push-by-digest=true,name-canonical=true,push=true
+          secrets: |
+            gh_token=${{ secrets.API_TOKEN_GITHUB }}
           build-args: |
             GOOS=linux
             GOARCH=${{ matrix.platform }}
