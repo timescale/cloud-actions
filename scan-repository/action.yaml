@@ -1,0 +1,42 @@
+name: 'Scan Repository'
+description: 'Scan repository for vulnerabilities'
+inputs:
+  report-format:
+    description: 'Report format (sarif, json, table)'
+    required: false
+    default: 'json'
+  severity:
+    description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
+    required: false
+    default: 'CRITICAL,HIGH'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate Trivy Vulnerability Report
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        scan-type: "fs"
+        output: trivy-repository.report
+        format: ${{ inputs.report-format }}
+        scan-ref: .
+        exit-code: 0
+
+    - name: Upload Vulnerability Scan Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-repository
+        path: trivy-repository.report
+        retention-days: 30
+
+    - name: Fail build on Found Vulnerabilities
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        scan-type: "fs"
+        format: table
+        scan-ref: .
+        severity: ${{ inputs.severity }}
+        ignore-unfixed: true
+        exit-code: 1
+        # On a subsequent call to the action we know trivy is already installed so can skip this
+        skip-setup-trivy: true
