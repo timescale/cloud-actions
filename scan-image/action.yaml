@@ -1,0 +1,57 @@
+name: 'Scan Image'
+description: 'Scan an image for vulnerabilities'
+inputs:
+  aws-access-key-id:
+    description: 'AWS Key ID secret name'
+    required: true
+  aws-secret-access-key:
+    description: 'AWS Access Key secret name'
+    required: true
+  region:
+    description: 'AWS region'
+    required: false
+    default: 'us-east-1'
+  registry:
+    description: 'ECR image repository'
+    required: true
+  image:
+    description: 'ECR image name & tag'
+    required: true
+  report-format:
+    description: 'Report format (sarif, json, table)'
+    required: false
+    default: 'json'
+  severity:
+    description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
+    required: false
+    default: 'CRITICAL,HIGH'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.region }}
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        scan-type: 'image'
+        image-ref: '${{ inputs.registry }}/${{ inputs.image }}'
+        output: trivy-image.report
+        format: ${{ inputs.report-format }}
+        severity: ${{ inputs.severity }}
+        exit-code: 0
+
+    - name: Upload Vulnerability Scan Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-image
+        path: trivy-image.report
+        retention-days: 30
