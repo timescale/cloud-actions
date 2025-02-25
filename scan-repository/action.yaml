@@ -1,14 +1,22 @@
 name: 'Scan Repository'
 description: 'Scan repository for vulnerabilities'
 inputs:
+  report-path:
+    description: 'Output file name'
+    required: false
+    default: 'trivy-repository.report'
   report-format:
     description: 'Report format (sarif, json, table)'
     required: false
-    default: 'json'
+    default: 'table'
   severity:
     description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
     required: false
     default: 'CRITICAL,HIGH'
+  fail-on-vulns:
+    description: 'Fail build on found vulnerabilities'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -17,7 +25,7 @@ runs:
       uses: aquasecurity/trivy-action@0.29.0
       with:
         scan-type: "fs"
-        output: trivy-repository.report
+        output: ${{ inputs.report-path }}
         format: ${{ inputs.report-format }}
         scan-ref: .
         exit-code: 0
@@ -26,10 +34,11 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: trivy-repository
-        path: trivy-repository.report
+        path: $${{ inputs.report-path }}
         retention-days: 30
 
     - name: Fail build on Found Vulnerabilities
+      if: ${{ inputs.fail-on-vulns == 'true' }}
       uses: aquasecurity/trivy-action@0.29.0
       with:
         scan-type: "fs"

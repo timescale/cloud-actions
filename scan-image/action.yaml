@@ -1,6 +1,10 @@
 name: 'Scan Image'
 description: 'Scan an image for vulnerabilities'
 inputs:
+  report-path:
+    description: 'Output file name'
+    required: false
+    default: 'trivy-repository.report'
   aws-access-key-id:
     description: 'AWS Key ID secret name'
     required: true
@@ -20,11 +24,15 @@ inputs:
   report-format:
     description: 'Report format (sarif, json, table)'
     required: false
-    default: 'json'
+    default: 'table'
   severity:
     description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
     required: false
     default: 'CRITICAL,HIGH'
+  fail-on-vulns:
+    description: 'Fail build on found vulnerabilities'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -39,12 +47,12 @@ runs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Run Trivy vulnerability scanner
+    - name: Generate Trivy Vulnerability Report
       uses: aquasecurity/trivy-action@0.29.0
       with:
         scan-type: 'image'
         image-ref: '${{ inputs.registry }}/${{ inputs.image }}'
-        output: trivy-image.report
+        output: ${{ inputs.report-path }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
         exit-code: 0
@@ -53,5 +61,18 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: trivy-image
-        path: trivy-image.report
+        path: $${{ inputs.report-path }}
         retention-days: 30
+
+    - name: Fail build on Found Vulnerabilities
+      if: ${{ inputs.fail-on-vulns == 'true' }}
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        scan-type: "fs"
+        format: table
+        scan-ref: .
+        severity: ${{ inputs.severity }}
+        ignore-unfixed: true
+        exit-code: 1
+        # On a subsequent call to the action we know trivy is already installed so can skip this
+        skip-setup-trivy: true
