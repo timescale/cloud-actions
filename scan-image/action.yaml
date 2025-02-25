@@ -49,30 +49,25 @@ runs:
 
     - name: Generate Trivy Vulnerability Report
       uses: aquasecurity/trivy-action@0.29.0
+      id: scan
       with:
         scan-type: 'image'
         image-ref: '${{ inputs.registry }}/${{ inputs.image }}'
         output: ${{ inputs.report-path }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
-        exit-code: 0
+        exit-code: 1
+      continue-on-error: true
 
     - name: Upload Vulnerability Scan Results
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: trivy-image
         path: $${{ inputs.report-path }}
         retention-days: 30
 
-    - name: Fail build on Found Vulnerabilities
-      if: ${{ inputs.fail-on-vulns == 'true' }}
-      uses: aquasecurity/trivy-action@0.29.0
-      with:
-        scan-type: "fs"
-        format: table
-        scan-ref: .
-        severity: ${{ inputs.severity }}
-        ignore-unfixed: true
-        exit-code: 1
-        # On a subsequent call to the action we know trivy is already installed so can skip this
-        skip-setup-trivy: true
+    - name: Fail on vulnerabilities
+      if: steps.scan.outcome != 'success' && inputs.fail-on-vulns == 'true'
+      shell: bash
+      run: exit 1
