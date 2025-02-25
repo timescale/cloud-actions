@@ -1,8 +1,12 @@
 name: 'Scan Repository'
 description: 'Scan repository for vulnerabilities'
 inputs:
-  report-path:
-    description: 'Output file name'
+  report-name:
+    description: 'Report name'
+    required: false
+    default: 'trivy-repository'
+  report-filename:
+    description: 'Report filename'
     required: false
     default: 'trivy-repository.report'
   report-format:
@@ -26,7 +30,7 @@ runs:
       id: scan
       with:
         scan-type: "fs"
-        output: ${{ inputs.report-path }}
+        output: ${{ inputs.report-filename }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
         scan-ref: .
@@ -37,8 +41,8 @@ runs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: trivy-repository
-        path: $${{ inputs.report-path }}
+        name: ${{ inputs.report-name }}
+        path: ${{ inputs.report-filename }}
         retention-days: 30
 
     - name: Fail on vulnerabilities
