@@ -50,7 +50,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: timescale/cloud-actions/scan-repository@main
+      - name: Scan repository for vulnerabilities
+        uses: timescale/cloud-actions/scan-repository@main
         id: scan
         with:
           report-name: ${{ env.REPORT_NAME }}
@@ -60,47 +61,12 @@ jobs:
           fail-on-vulns: true
         continue-on-error: true
 
-      - name: Download vulnerability report
+      - name: Create Issue
         if: steps.scan.outcome != 'success'
-        uses: actions/download-artifact@v4
+        uses: timescale/cloud-actions/scan-create-issue@main
         with:
-          name: ${{ env.REPORT_NAME }}
-          path: ./vulnerability-reports
-
-      - name: Create issue for vulnerabilities
-        if: steps.scan.outcome != 'success'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issueTitle = 'Security Vulnerabilities Found';
-            const issueBody = `
-            ## Security Scan Results
-
-            Vulnerabilities were detected in the codebase during the scan on PR #${context.issue.number}.
-
-            <details>
-            <summary>Please review the attached report for details.</summary>
-
-            \`\`\`
-            ${require('fs').readFileSync('./vulnerability-reports/${{ env.REPORT_FILENAME }}', 'utf8')}
-            \`\`\`
-
-            </details>
-            `;
-
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: issueTitle,
-              body: issueBody,
-              labels: ['security', 'vulnerability']
-            });
-
-      - name: Fail on vulnerabilities
-        if: steps.scan.outcome != 'success'
-        shell: bash
-        run: exit 1
+          report-name: ${{ env.REPORT_NAME }}
+          report-filename: ${{ env.REPORT_FILENAME }}
 ```
 
 ### Add comment to pull request example

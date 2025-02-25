@@ -1,0 +1,14 @@
+## Description
+
+Create a new issue if vulnerabilities are found with the report attached.
+
+- How to use it:
+```yaml
+    - name: Scan image for vulnerabilities
+      uses: timescale/cloud-actions/scan-create-issue@main
+      with:
+        report-name: 'trivy-image' #OPTIONAL (Default to trivy-image)
+        report-filename: 'trivy-image.report' #OPTIONAL (Default to trivy-image.report)
+```
+
+Reference [scan-image README](../scan-image/README.md#create-issue-example) for extended example.

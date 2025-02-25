@@ -1,0 +1,50 @@
+name: "Create Issue On Vulnerabilities"
+description: "Create new issue with vulnerabilities scan results"
+inputs:
+  report-name:
+    description: "Report name to download"
+    required: true
+  report-filename:
+    description: "Report filename in report archive"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.report-name }}
+        path: ./vulnerability-reports
+
+    - name: Create Issue
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issueTitle = 'Security Vulnerabilities Found';
+          const issueBody = `
+          ## Security Scan Results
+
+          Vulnerabilities were detected in the security scan on PR #${context.issue.number}.
+
+          <details>
+          <summary>Please review the attached report for details.</summary>
+
+          \`\`\`
+          ${require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8')}
+          \`\`\`
+
+          </details>
+          `;
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: issueTitle,
+            body: issueBody,
+            labels: ['security', 'vulnerability']
+          });
+
+    - name: Fail on vulnerabilities
+      shell: bash
+      run: exit 1
