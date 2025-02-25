@@ -17,6 +17,10 @@ inputs:
     description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
     required: false
     default: 'CRITICAL,HIGH'
+  ignore-unfixed:
+    description: 'ignore unfixed vulnerabilities'
+    required: false
+    default: 'true'
   fail-on-vulns:
     description: 'Fail build on found vulnerabilities'
     required: false
@@ -33,6 +37,7 @@ runs:
         output: ${{ inputs.report-filename }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
+        ignore-unfixed: ${{ inputs.ignore-unfixed }}
         scan-ref: .
         exit-code: 1
       continue-on-error: true

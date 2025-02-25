@@ -10,6 +10,7 @@ Scan current repository for vulnerabilities
         report-filename: 'trivy-repository.report' #OPTIONAL (Default to trivy-repository.report)
         report-format: table #OPTIONAL (Default to table)
         severity: CRITICAL #OPTIONAL (Default to CRITICAL,HIGH)
+        ignore-unfixed: true #OPTIONAL (Default to true)
         fail-on-vulns: false #OPTIONAL (Default to false)
 ```
 
@@ -28,12 +29,6 @@ on:
       - "main"
 
 env:
-  # The docker registry that images will be pushed to.
-  REGISTRY: <registry-name>
-
-  # The image tag to use for this CI pipeline's build. This is used by deployments.
-  TAG: auto-${{ github.sha }}
-  
   # The name of the report attached to the action run.
   REPORT_NAME: trivy-repository
   # The name of the report file.
@@ -86,7 +81,6 @@ env:
   REPORT_NAME: trivy-repository
   # The name of the report file.
   REPORT_FILENAME: trivy-repository.report
-
   # Unique identifier for your comment, used to find it later
   COMMENT_IDENTIFIER: "SECURITY_SCAN_RESULTS_IDENTIFIER"
 
