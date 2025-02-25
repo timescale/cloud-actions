@@ -1,0 +1,125 @@
+name: Comment on PR with vulnerabilities
+description: "Comment on PR with vulnerabilities scan results"
+inputs:
+  report-name:
+    description: "Report name to download"
+    required: true
+  report-filename:
+    description: "Report filename in report archive"
+    required: true
+  comment-identifier:
+    description: "Comment identifier"
+    required: false
+    default: 'SECURITY_SCAN_RESULTS_IDENTIFIER'
+  scan-outcome:
+    description: "Scan action outcome"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download vulnerability report
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.report-name }}
+        path: ./vulnerability-reports
+
+    - name: Update or create PR comment with vulnerabilities
+      if: inputs.scan-outcome != 'success'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          
+          const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
+          ## ⚠️ Security Vulnerabilities Detected
+          
+          Vulnerabilities were found in the image during the security scan (commit: ${context.sha.substring(0, 7)}).
+          
+          <details>
+          <summary>Click to expand vulnerability report</summary>
+          
+          \`\`\`
+          ${reportContent}
+          \`\`\`
+          
+          </details>
+          
+          Please review and address these security issues before merging.
+          `;
+          
+          // Get all comments on the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          // Look for our specific comment using the identifier
+          const botComment = comments.find(comment => {
+            return comment.body.includes('${{ inputs.comment-identifier }}');
+          });
+          
+          if (botComment) {
+            // If comment exists, update it
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+            console.log(`Updated existing comment ID ${botComment.id}`);
+          } else {
+            // If comment doesn't exist, create a new one
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+            console.log('Created new comment');
+          }
+
+    - name: Comment on PR when no vulnerabilities found
+      if: inputs.scan-outcome == 'success'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
+          ## ✅ Security Scan Passed
+          
+          No critical or high vulnerabilities were found in the security scan (commit: ${context.sha.substring(0, 7)}).
+          `;
+          
+          // Get all comments on the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          // Look for our specific comment
+          const botComment = comments.find(comment => {
+            return comment.body.includes('${{ inputs.comment-identifier }}');
+          });
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+          }
+
+    - name: Fail on vulnerabilities
+      if: inputs.scan-outcome != 'success'
+      shell: bash
+      run: exit 1
