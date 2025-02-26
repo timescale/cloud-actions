@@ -8,9 +8,6 @@ Scan image for vulnerabilities
       with:
         report-name: 'trivy-image' #OPTIONAL (Default to trivy-image)
         report-filename: 'trivy-image.report' #OPTIONAL (Default to trivy-image.report)
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} #REQUIRED
-        aws-secret-access-key: ${{ secrets._AWS_SECRET_ACCESS_KEY }} #REQUIRED
-        region: us-east-1 #OPTIONAL (Default to us-east-1)
         registry: <registry-name> #REQUIRED
         image: <image-name>:<tag> #REQUIRED
         report-format: table #OPTIONAL (Default to table)
@@ -75,8 +72,6 @@ jobs:
         with:
           report-name: ${{ env.REPORT_NAME }}
           report-filename: ${{ env.REPORT_FILENAME }}
-          aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
           registry: ${{ env.REGISTRY }}
           image: <your-repo-name>:${{ env.TAG }}
           report-format: table
@@ -145,8 +140,6 @@ jobs:
         id: scan
         with:
           report-name: ${{ env.REPORT_NAME }}
-          aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
           registry: ${{ env.REGISTRY }}
           image: <your-repo-name>:${{ env.TAG }}
           report-format: table

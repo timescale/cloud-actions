@@ -9,16 +9,6 @@ inputs:
     description: 'Report filename'
     required: false
     default: 'trivy-image.report'
-  aws-access-key-id:
-    description: 'AWS Key ID secret name'
-    required: true
-  aws-secret-access-key:
-    description: 'AWS Access Key secret name'
-    required: true
-  region:
-    description: 'AWS region'
-    required: false
-    default: 'us-east-1'
   registry:
     description: 'ECR image repository'
     required: true
@@ -45,16 +35,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ inputs.aws-access-key-id }}
-        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-        aws-region: ${{ inputs.region }}
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
-
     - name: Generate Trivy Vulnerability Report
       uses: aquasecurity/trivy-action@0.29.0
       id: scan
