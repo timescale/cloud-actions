@@ -7,6 +7,9 @@ inputs:
   report-filename:
     description: "Report filename in report archive"
     required: true
+  issue-identifier:
+    description: "Issue identifier"
+    required: true
 
 runs:
   using: "composite"
@@ -22,10 +25,10 @@ runs:
       with:
         script: |
           const issueTitle = 'Security Vulnerabilities Found';
-          const issueBody = `
+          const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
           ## Security Scan Results
 
-          Vulnerabilities were detected in the security scan on PR #${context.issue.number}.
+          Vulnerabilities were detected in the security scan.
 
           <details>
           <summary>Please review the attached report for details.</summary>
@@ -37,10 +40,36 @@ runs:
           </details>
           `;
 
-          await github.rest.issues.create({
+          // Search for existing issues with our identifier
+          const { data: issues } = await github.rest.issues.listForRepo({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            title: issueTitle,
-            body: issueBody,
+            state: 'open',
             labels: ['security', 'vulnerability']
           });
+          
+          // Find issue containing our identifier
+          const existingIssue = issues.find(issue => {
+            return issue.body && issue.body.includes('${{ inputs.issue-identifier }}');
+          });
+          
+          if (existingIssue) {
+            // Update existing issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: existingIssue.number,
+              body: issueBody
+            });
+            console.log(`Updated existing issue #${existingIssue.number}`);
+          } else {
+            // Create new issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['security', 'vulnerability']
+            });
+            console.log('Created new issue');
+          }

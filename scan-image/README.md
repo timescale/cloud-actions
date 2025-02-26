@@ -85,6 +85,7 @@ jobs:
         with:
           report-name: ${{ env.REPORT_NAME }}
           report-filename: ${{ env.REPORT_FILENAME }}
+          issue-identifier: <your-repo-name>
 ```
 
 ### Add comment to pull request example
