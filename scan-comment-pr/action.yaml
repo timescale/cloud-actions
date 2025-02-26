@@ -14,6 +14,9 @@ inputs:
   scan-outcome:
     description: "Scan action outcome"
     required: true
+  pull-request-number:
+    description: "Pull request number"
+    required: false
 
 runs:
   using: "composite"
@@ -28,6 +31,14 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          // Pre-flight checks: we need to ensure that either pull request number is provided by inputs 
+          // or the action is running in pull request context
+          const pullRequestNumber = '${{ inputs.pull-request-number }}' || context.issue.number;
+          if (!pullRequestNumber) {
+            core.setFailed('No pull request number provided and not running in a pull request context');
+            return;
+          };
+          
           const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
           const scanStepOutcome = '${{ inputs.scan-outcome }}';
           
@@ -52,7 +63,7 @@ runs:
           const { data: comments } = await github.rest.issues.listComments({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            issue_number: context.issue.number,
+            issue_number: pullRequestNumber,
           });
           
           // Look for our specific comment using the identifier
@@ -74,7 +85,7 @@ runs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: pullRequestNumber,
               body: commentBody
             });
             console.log('Created new comment');

@@ -16,16 +16,29 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          const core = require('@actions/core');
+          let branch;
           
-          // Get the branch name from the push event
-          const branch = context.payload.ref.replace('refs/heads/', '');
-
           // Check if we're already in a PR context
           if (context.payload.pull_request) {
             console.log(`Already in PR context, PR #${context.payload.pull_request.number}`);
             core.setOutput('has_pr', 'true'); 
             core.setOutput('pr_number', context.payload.pull_request.number);
+            return;
+          }
+          
+          // Get the branch name based on event type
+          if (context.payload.ref) {
+            // Push event
+            branch = context.payload.ref.replace('refs/heads/', '');
+          } else if (context.payload.workflow_run && context.payload.workflow_run.head_branch) {
+            // Workflow run event
+            branch = context.payload.workflow_run.head_branch;
+          } else if (process.env.GITHUB_REF) {
+            // Fallback to environment variable
+            branch = process.env.GITHUB_REF.replace('refs/heads/', '');
+          } else {
+            console.log('Could not determine branch name');
+            core.setOutput('has_pr', 'false');
             return;
           }
 
