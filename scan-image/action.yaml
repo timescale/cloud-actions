@@ -30,7 +30,7 @@ inputs:
   fail-on-vulns:
     description: 'Fail build on found vulnerabilities'
     required: false
-    default: 'false'
+    default: 'true'
 
 runs:
   using: "composite"

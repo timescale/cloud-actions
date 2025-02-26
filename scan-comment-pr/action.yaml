@@ -11,9 +11,6 @@ inputs:
     description: "Comment identifier"
     required: false
     default: 'SECURITY_SCAN_RESULTS_IDENTIFIER'
-  scan-outcome:
-    description: "Scan action outcome"
-    required: true
   pull-request-number:
     description: "Pull request number"
     required: false
@@ -40,14 +37,14 @@ runs:
           };
           
           const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
-          const scanStepOutcome = '${{ inputs.scan-outcome }}';
           
           const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
-          ## ${scanStepOutcome == 'success' ? '✅ Security Scan Passed' : '⚠️ Security Vulnerabilities Detected'}
+          ## Security Scan Completed
           
-          ${scanStepOutcome != 'success' ? 'Vulnerabilities were found during the security scan' : 'No vulnerabilities were found'} (commit: ${context.sha.substring(0, 7)}).
+          Scanning was performed on commit: ${context.sha.substring(0, 7)}.
+          Please, review vulnerabilities scan report before merging.
           
-          ${scanStepOutcome != 'success' ? `<details>
+          <details>
           <summary>Click to expand vulnerability report</summary>
           
           \`\`\`
@@ -55,8 +52,6 @@ runs:
           \`\`\`
           
           </details>
-          
-          Please review and address these security issues before merging.` : ''}
           `;
           
           // Get all comments on the PR
@@ -90,8 +85,3 @@ runs:
             });
             console.log('Created new comment');
           }
-
-    - name: Fail on vulnerabilities
-      if: inputs.scan-outcome != 'success'
-      shell: bash
-      run: exit 1

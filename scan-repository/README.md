@@ -11,7 +11,7 @@ Scan current repository for vulnerabilities
         report-format: table #OPTIONAL (Default to table)
         severity: CRITICAL #OPTIONAL (Default to CRITICAL,HIGH)
         ignore-unfixed: true #OPTIONAL (Default to true)
-        fail-on-vulns: false #OPTIONAL (Default to false)
+        fail-on-vulns: false #OPTIONAL (Default to true)
 ```
 
 This action will fail if vulnerabilities are found. The report that can be used to track and remediate vulnerabilities will be uploaded as an artifact to the workflow run.

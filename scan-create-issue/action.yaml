@@ -44,7 +44,3 @@ runs:
             body: issueBody,
             labels: ['security', 'vulnerability']
           });
-
-    - name: Fail on vulnerabilities
-      shell: bash
-      run: exit 1
