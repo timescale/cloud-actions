@@ -1,0 +1,61 @@
+name: Find PR
+description: 'Find Pull Request matching the given branch'
+outputs:
+  has_pr:
+    description: "Whether a PR exists for this branch"
+    value: ${{ steps.find_pr.outputs.has_pr }}
+  pr_number:
+    description: "The PR number"
+    value: ${{ steps.find_pr.outputs.pr_number }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Find PR
+      id: find_pr
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let branch;
+          
+          // Check if we're already in a PR context
+          if (context.payload.pull_request) {
+            console.log(`Already in PR context, PR #${context.payload.pull_request.number}`);
+            core.setOutput('has_pr', 'true'); 
+            core.setOutput('pr_number', context.payload.pull_request.number);
+            return;
+          }
+          
+          // Get the branch name based on event type
+          if (context.payload.ref) {
+            // Push event
+            branch = context.payload.ref.replace('refs/heads/', '');
+          } else if (context.payload.workflow_run && context.payload.workflow_run.head_branch) {
+            // Workflow run event
+            branch = context.payload.workflow_run.head_branch;
+          } else if (process.env.GITHUB_REF) {
+            // Fallback to environment variable
+            branch = process.env.GITHUB_REF.replace('refs/heads/', '');
+          } else {
+            console.log('Could not determine branch name');
+            core.setOutput('has_pr', 'false');
+            return;
+          }
+
+          // Find open PRs associated with this branch
+          const { data: pullRequests } = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            head: `${context.repo.owner}:${branch}`
+          });
+
+          if (pullRequests.length > 0) {
+            // Found an associated PR
+            console.log(`Found PR #${pullRequests[0].number} for branch ${branch}`);
+            core.setOutput('has_pr', 'true');
+            core.setOutput('pr_number', pullRequests[0].number);
+          } else {
+            console.log(`No open PR found for branch ${branch}`);
+            core.setOutput('has_pr', 'false');
+          }

@@ -1,0 +1,95 @@
+name: Comment on PR with vulnerabilities
+description: "Comment on PR with vulnerabilities scan results"
+inputs:
+  report-name:
+    description: "Report name to download"
+    required: true
+  report-filename:
+    description: "Report filename in report archive"
+    required: true
+  comment-identifier:
+    description: "Comment identifier"
+    required: false
+    default: 'SECURITY_SCAN_RESULTS_IDENTIFIER'
+  pull-request-number:
+    description: "Pull request number"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download vulnerability report
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.report-name }}
+        path: ./vulnerability-reports
+
+    - name: Update or create PR comment with vulnerabilities
+      uses: actions/github-script@v6
+      with:
+        script: |
+          // Pre-flight checks: we need to ensure that either pull request number is provided by inputs 
+          // or the action is running in pull request context
+          const pullRequestNumber = '${{ inputs.pull-request-number }}' || context.issue.number;
+          if (!pullRequestNumber) {
+            core.setFailed('No pull request number provided and not running in a pull request context');
+            return;
+          };
+          
+          const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          
+          // Get the correct commit SHA - use PR head SHA if available
+          let commitSha;
+          if (context.payload.pull_request) {
+            commitSha = context.payload.pull_request.head.sha;
+          } else {
+            commitSha = context.sha;
+          }
+          
+          const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
+          ## Security Scan Completed
+          
+          Scanning was performed on commit: ${commitSha.substring(0, 7)}.
+          Please, review vulnerabilities scan report before merging.
+          
+          <details>
+          <summary>Click to expand vulnerability report</summary>
+          
+          \`\`\`
+          ${reportContent}
+          \`\`\`
+          
+          </details>
+          `;
+          
+          // Get all comments on the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: pullRequestNumber,
+          });
+          
+          // Look for our specific comment using the identifier
+          const botComment = comments.find(comment => {
+            return comment.body.includes('${{ inputs.comment-identifier }}');
+          });
+          
+          if (botComment) {
+            // If comment exists, update it
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+            console.log(`Updated existing comment ID ${botComment.id}`);
+          } else {
+            // If comment doesn't exist, create a new one
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequestNumber,
+              body: commentBody
+            });
+            console.log('Created new comment');
+          }

@@ -1,0 +1,75 @@
+name: "Create Issue On Vulnerabilities"
+description: "Create new issue with vulnerabilities scan results"
+inputs:
+  report-name:
+    description: "Report name to download"
+    required: true
+  report-filename:
+    description: "Report filename in report archive"
+    required: true
+  issue-identifier:
+    description: "Issue identifier"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.report-name }}
+        path: ./vulnerability-reports
+
+    - name: Create Issue
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issueTitle = 'Security Vulnerabilities Found';
+          const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
+          ## Security Scan Results
+
+          Vulnerabilities were detected in the security scan.
+
+          <details>
+          <summary>Please review the attached report for details.</summary>
+
+          \`\`\`
+          ${require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8')}
+          \`\`\`
+
+          </details>
+          `;
+
+          // Search for existing issues with our identifier
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: ['security', 'vulnerability']
+          });
+          
+          // Find issue containing our identifier
+          const existingIssue = issues.find(issue => {
+            return issue.body && issue.body.includes('${{ inputs.issue-identifier }}');
+          });
+          
+          if (existingIssue) {
+            // Update existing issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: existingIssue.number,
+              body: issueBody
+            });
+            console.log(`Updated existing issue #${existingIssue.number}`);
+          } else {
+            // Create new issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['security', 'vulnerability']
+            });
+            console.log('Created new issue');
+          }
