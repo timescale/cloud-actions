@@ -85,7 +85,7 @@ jobs:
           file: ${{ inputs.dockerfile_path }}
 
       - name: Scan Image
-        uses: timescale/cloud-actions/scan-report@b47e350efec52fb2a31d7ad02f144c52eb571d3c
+        uses: timescale/cloud-actions/scan-report@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
         with:
           report-name: 'image-scan'
           report-filename: 'image-scan.report'
@@ -157,7 +157,7 @@ jobs:
             BPF_TARGET=${{ matrix.platform }}
 
       - name: Scan Image
-        uses: timescale/cloud-actions/scan-report@b47e350efec52fb2a31d7ad02f144c52eb571d3c
+        uses: timescale/cloud-actions/scan-report@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
         with:
           report-name: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}'
           report-filename: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}.report'
