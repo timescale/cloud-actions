@@ -44,12 +44,12 @@ on:
         description: 'Fail build on found vulnerabilities'
         type: boolean
         required: false
-        default: 'false'
+        default: false
       ignore-unfixed:
         description: 'Ignore unfixed vulnerabilities'
         type: boolean
         required: false
-        default: 'true'
+        default: true
     secrets:
       API_TOKEN_GITHUB:
         required: true
@@ -94,8 +94,8 @@ jobs:
           tags: |
             ${{ inputs.tags }}
           severity: ${{ inputs.severity }}
-          ignore-unfixed: ${{ inputs.ignore-unfixed }}
-          fail-on-vulns: ${{ inputs.fail-on-vulns }}
+          ignore-unfixed: '${{ inputs.ignore-unfixed }}'
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
 
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
@@ -165,8 +165,8 @@ jobs:
           registry: ${{ inputs.registry }}
           digest: "${{ steps.build.outputs.digest }}"
           severity: ${{ inputs.severity }}
-          ignore-unfixed: ${{ inputs.ignore-unfixed }}
-          fail-on-vulns: ${{ inputs.fail-on-vulns }}
+          ignore-unfixed: '${{ inputs.ignore-unfixed }}'
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
 
       - name: Export digest
         run: |
