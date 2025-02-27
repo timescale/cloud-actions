@@ -14,7 +14,12 @@ inputs:
     required: true
   tag:
     description: 'ECR image tag'
-    required: true
+    required: false
+    default: ''
+  digest:
+    description: 'ECR image digest'
+    required: false
+    default: ''
   report-format:
     description: 'Report format (sarif, json, table)'
     required: false
@@ -35,12 +40,35 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Validate tag and digest inputs
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.tag }}" && -n "${{ inputs.digest }}" ]]; then
+          echo "Error: Both tag and digest are provided. Please provide either tag or digest, not both."
+          exit 1
+        fi
+          
+        if [[ -z "${{ inputs.tag }}" && -z "${{ inputs.digest }}" ]]; then
+          echo "Error: Neither tag nor digest is provided. Please provide either tag or digest."
+          exit 1
+        fi
+
+    - name: Set image reference
+      id: set-image-ref
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.tag }}" ]]; then
+          echo "image_ref=${{ inputs.registry }}:${{ inputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "image_ref=${{ inputs.registry }}@${{ inputs.digest }}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Generate Trivy Vulnerability Report
       uses: aquasecurity/trivy-action@0.29.0
       id: scan
       with:
         scan-type: 'image'
-        image-ref: '${{ inputs.registry }}:${{ inputs.tag }}'
+        image-ref: ${{ steps.set-image-ref.outputs.image_ref }}
         output: ${{ inputs.report-filename }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
