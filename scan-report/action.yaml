@@ -71,7 +71,7 @@ runs:
           echo "image_ref=${{ inputs.registry }}@${{ inputs.digest }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: timescale/cloud-actions/scan-image@b14fc0e0baf06a7d549bd0972101de162005ad9c
+    - uses: timescale/cloud-actions/scan-image@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
       name: Scan Image for Vulnerabilities
       id: scan
       with:
@@ -85,12 +85,12 @@ runs:
       continue-on-error: true
 
     # Determine if a pull request exists
-    - uses: timescale/cloud-actions/find-pr@b14fc0e0baf06a7d549bd0972101de162005ad9c
+    - uses: timescale/cloud-actions/find-pr@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
       name: Find Pull Request
       id: find-pr
 
     # Comment on the pull request if it exists
-    - uses: timescale/cloud-actions/scan-comment-pr@b14fc0e0baf06a7d549bd0972101de162005ad9c
+    - uses: timescale/cloud-actions/scan-comment-pr@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
       name: Comment on Pull Request
       if: steps.find-pr.outputs.has_pr == 'true'
       with:
@@ -100,7 +100,7 @@ runs:
         comment-identifier: ${{ inputs.identifier }}
 
     # Create an issue if no pull request exists
-    - uses: timescale/cloud-actions/scan-create-issue@b14fc0e0baf06a7d549bd0972101de162005ad9c
+    - uses: timescale/cloud-actions/scan-create-issue@61d7c6131a7f4659ecab0527e4188bdee25d9cbc
       name: Create Issue
       if: steps.find-pr.outputs.has_pr == 'false'
       with:
