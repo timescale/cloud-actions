@@ -24,6 +24,44 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          const fs = require('fs');
+          const reportContent = fs.readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          
+          // Check if vulnerabilities were found
+          let hasVulnerabilities = false;
+          
+          try {
+            // Try to parse as JSON first (could be standard JSON format or SARIF)
+            const jsonReport = JSON.parse(reportContent);
+          
+            // Check if it's SARIF format (has $schema or version fields and runs array)
+            if ((jsonReport.$schema && jsonReport.$schema.includes('sarif')) || 
+                (jsonReport.version && jsonReport.runs)) {
+              // SARIF format - check runs[].results array
+              hasVulnerabilities = jsonReport.runs && 
+                                  jsonReport.runs.some(run => 
+                                    run.results && run.results.length > 0
+                                  );
+            } 
+            // Check if it's Trivy JSON format
+            else if (jsonReport.Results) {
+              // For Trivy JSON format, check if any Results have Vulnerabilities
+              hasVulnerabilities = jsonReport.Results.some(result => 
+                result.Vulnerabilities && result.Vulnerabilities.length > 0
+              );
+            }
+          } catch (e) {
+            // Not JSON format, assume text/table format and check for "Total: 0"
+            hasVulnerabilities = !reportContent.includes("Total: 0");
+          }
+          
+          if (!hasVulnerabilities) {
+            console.log("No vulnerabilities found. Skipping issue creation.");
+            return;
+          }
+          
+          console.log("Vulnerabilities found. Creating or updating issue.");
+          
           const issueTitle = 'Security Vulnerabilities Found';
           const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
           ## Security Scan Results
@@ -34,7 +72,7 @@ runs:
           <summary>Please review the attached report for details.</summary>
 
           \`\`\`
-          ${require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8')}
+          ${reportContent}
           \`\`\`
 
           </details>
