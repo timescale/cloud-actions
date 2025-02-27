@@ -10,10 +10,10 @@ inputs:
     required: false
     default: 'trivy-image.report'
   registry:
-    description: 'ECR image repository'
+    description: 'ECR image registry'
     required: true
-  image:
-    description: 'ECR image name & tag'
+  tag:
+    description: 'ECR image tag'
     required: true
   report-format:
     description: 'Report format (sarif, json, table)'
@@ -40,7 +40,7 @@ runs:
       id: scan
       with:
         scan-type: 'image'
-        image-ref: '${{ inputs.registry }}/${{ inputs.image }}'
+        image-ref: '${{ inputs.registry }}:${{ inputs.tag }}'
         output: ${{ inputs.report-filename }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
