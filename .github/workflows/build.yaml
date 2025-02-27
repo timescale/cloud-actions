@@ -35,6 +35,21 @@ on:
         type: boolean
         default: false
         description: "Multiplatform build"
+      severity:
+        description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
+        type: string
+        required: false
+        default: 'CRITICAL,HIGH'
+      fail-on-vulns:
+        description: 'Fail build on found vulnerabilities'
+        type: boolean
+        required: false
+        default: 'true'
+      ignore-unfixed:
+        description: 'Ignore unfixed vulnerabilities'
+        type: boolean
+        required: false
+        default: 'true'
     secrets:
       API_TOKEN_GITHUB:
         required: true
@@ -78,8 +93,9 @@ jobs:
           registry: ${{ inputs.registry }}
           tags: |
             ${{ inputs.tags }}
-          severity: 'CRITICAL,HIGH'
-          fail-on-vulns: false
+          severity: ${{ inputs.severity }}
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          fail-on-vulns: ${{ inputs.fail-on-vulns }}
 
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
@@ -148,8 +164,9 @@ jobs:
           identifier: '${{ inputs.registry }}-${{ inputs.target }}-${{ matrix.platform }}'
           registry: ${{ inputs.registry }}
           digest: "${{ steps.build.outputs.digest }}"
-          severity: 'CRITICAL,HIGH'
-          fail-on-vulns: false
+          severity: ${{ inputs.severity }}
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          fail-on-vulns: ${{ inputs.fail-on-vulns }}
 
       - name: Export digest
         run: |
