@@ -42,35 +42,55 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Process Tags
-      id: process-tags
+    - name: Validate inputs
       shell: bash
       run: |
-        # Convert multi-line or comma-separated input to an array
-        IFS=$'\n,' read -ra TAGS <<< "${{ inputs.tags }}"
+        # Check if both tags and digest are provided or neither is provided
+        if [[ -n "${{ inputs.tags }}" && -n "${{ inputs.digest }}" ]]; then
+          echo "Error: Both tags and digest are provided. Please provide either tags or digest, not both."
+          exit 1
+        fi
+  
+        if [[ -z "${{ inputs.tags }}" && -z "${{ inputs.digest }}" ]]; then
+          echo "Error: Neither tags nor digest is provided. Please provide either tags or digest."
+          exit 1
+        fi
 
-        # Use the first tag as a primary tag for reports
-        echo "primary_tag=${TAGS[0]}" >> $GITHUB_OUTPUT
+    - name: Process Inputs and set image reference
+      id: process-input
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.tags }}" ]]; then
+          # Convert multi-line or comma-separated input to an array
+          IFS=$'\n,' read -ra TAGS <<< "${{ inputs.tags }}"
 
-        # Create comma-separated list for logging
-        echo "all_tags=$(echo "${TAGS[@]}" | tr ' ' ',')" >> $GITHUB_OUTPUT
-    - uses: timescale/cloud-actions/scan-image@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+          # Use the first tag as a primary tag for reports
+          echo "image_ref=${{ inputs.registry }}:${TAGS[0]}" >> $GITHUB_OUTPUT
+        else
+          # Using digest
+          echo "image_ref=${{ inputs.registry }}@${{ inputs.digest }}" >> $GITHUB_OUTPUT
+        fi
+
+    - uses: timescale/cloud-actions/scan-image@b5db8c4743c437b91e463af3704a3a391cf19ffa
       name: Scan Image for Vulnerabilities
       id: scan
       with:
         report-name: ${{ inputs.report-name }}
         report-filename: ${{ inputs.report-filename }}
-        registry: ${{ inputs.registry }}
-        tag: ${{ steps.process-tags.outputs.primary_tag }}
+        image-ref: ${{ steps.process-input.outputs.image_ref }}
         report-format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
         fail-on-vulns: ${{ inputs.fail-on-vulns }}
         ignore-unfixed: ${{ inputs.ignore-unfixed }}
       continue-on-error: true
-    - uses: timescale/cloud-actions/find-pr@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+
+    # Determine if a pull request exists
+    - uses: timescale/cloud-actions/find-pr@b5db8c4743c437b91e463af3704a3a391cf19ffa
       name: Find Pull Request
       id: find-pr
-    - uses: timescale/cloud-actions/scan-comment-pr@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+
+    # Comment on the pull request if it exists
+    - uses: timescale/cloud-actions/scan-comment-pr@b5db8c4743c437b91e463af3704a3a391cf19ffa
       name: Comment on Pull Request
       if: steps.find-pr.outputs.has_pr == 'true'
       with:
@@ -78,7 +98,9 @@ runs:
         report-filename: ${{ inputs.report-filename }}
         pull-request-number: ${{ steps.find-pr.outputs.pr_number }}
         comment-identifier: ${{ inputs.identifier }}
-    - uses: timescale/cloud-actions/scan-create-issue@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+
+    # Create an issue if no pull request exists
+    - uses: timescale/cloud-actions/scan-create-issue@b5db8c4743c437b91e463af3704a3a391cf19ffa
       name: Create Issue
       if: steps.find-pr.outputs.has_pr == 'false'
       with:
