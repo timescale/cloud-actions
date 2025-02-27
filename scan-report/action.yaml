@@ -1,0 +1,82 @@
+name: Scan Image and Provide Report
+description: 'Scan an image for vulnerabilities and provide a report'
+inputs:
+  report-name:
+    description: 'Report name'
+    required: true
+  report-filename:
+    description: 'Report filename'
+    required: true
+  identifier:
+    description: 'Issue/Comment identifier'
+    required: true
+  registry:
+    description: 'ECR image repository'
+    required: true
+  tags:
+    description: 'List of image tag'
+    required: true
+  report-format:
+    description: 'Report format (sarif, json, table)'
+    required: false
+    default: 'table'
+  severity:
+    description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
+    required: false
+    default: 'CRITICAL,HIGH'
+  fail-on-vulns:
+    description: 'Fail build on found vulnerabilities'
+    required: false
+    default: 'true'
+  ignore-unfixed:
+    description: 'Ignore unfixed vulnerabilities'
+    required: false
+    default: 'true'
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Process Tags
+      id: process-tags
+      shell: bash
+      run: |
+        # Convert multi-line or comma-separated input to an array
+        IFS=$'\n,' read -ra TAGS <<< "${{ inputs.tags }}"
+
+        # Use the first tag as a primary tag for reports
+        echo "primary_tag=${TAGS[0]}" >> $GITHUB_OUTPUT
+
+        # Create comma-separated list for logging
+        echo "all_tags=$(echo "${TAGS[@]}" | tr ' ' ',')" >> $GITHUB_OUTPUT
+    - uses: timescale/cloud-actions/scan-image@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+      name: Scan Image for Vulnerabilities
+      id: scan
+      with:
+        report-name: ${{ inputs.report-name }}
+        report-filename: ${{ inputs.report-filename }}
+        registry: ${{ inputs.registry }}
+        tag: ${{ steps.process-tags.outputs.primary_tag }}
+        report-format: ${{ inputs.report-format }}
+        severity: ${{ inputs.severity }}
+        fail-on-vulns: ${{ inputs.fail-on-vulns }}
+        ignore-unfixed: ${{ inputs.ignore-unfixed }}
+      continue-on-error: true
+    - uses: timescale/cloud-actions/find-pr@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+      name: Find Pull Request
+      id: find-pr
+    - uses: timescale/cloud-actions/scan-comment-pr@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+      name: Comment on Pull Request
+      if: steps.find-pr.outputs.has_pr == 'true'
+      with:
+        report-name: ${{ inputs.report-name }}
+        report-filename: ${{ inputs.report-filename }}
+        pull-request-number: ${{ steps.find-pr.outputs.pr_number }}
+        comment-identifier: ${{ inputs.identifier }}
+    - uses: timescale/cloud-actions/scan-create-issue@d70d4d07eab275d51e257a4f2c40ed7afdcdac40
+      name: Create Issue
+      if: steps.find-pr.outputs.has_pr == 'false'
+      with:
+        report-name: ${{ inputs.report-name }}
+        report-filename: ${{ inputs.report-filename }}
+        issue-identifier: ${{ inputs.identifier }}
