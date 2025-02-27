@@ -37,7 +37,7 @@ runs:
       id: scan
       with:
         scan-type: 'image'
-        image-ref: ${{ inputs.image_ref }}
+        image-ref: ${{ inputs.image-ref }}
         output: ${{ inputs.report-filename }}
         format: ${{ inputs.report-format }}
         severity: ${{ inputs.severity }}
