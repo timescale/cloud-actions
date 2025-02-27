@@ -38,10 +38,18 @@ runs:
           
           const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
           
+          // Get the correct commit SHA - use PR head SHA if available
+          let commitSha;
+          if (context.payload.pull_request) {
+            commitSha = context.payload.pull_request.head.sha;
+          } else {
+            commitSha = context.sha;
+          }
+          
           const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
           ## Security Scan Completed
           
-          Scanning was performed on commit: ${context.sha.substring(0, 7)}.
+          Scanning was performed on commit: ${commitSha.substring(0, 7)}.
           Please, review vulnerabilities scan report before merging.
           
           <details>
