@@ -67,11 +67,45 @@ runs:
           
           console.log("Vulnerabilities found. Creating or updating issue.");
           
+          // Get the correct commit SHA - use PR head SHA if available
+          let commitSha;
+          if (context.payload.pull_request) {
+            commitSha = context.payload.pull_request.head.sha;
+          } else {
+            commitSha = context.sha;
+          }
+          
+          let branchName = "";
+  
+          // For push events, the ref is in the format refs/heads/branch-name
+          if (context.eventName === 'push') {
+            branchName = context.ref.replace('refs/heads/', '');
+          }
+          // For pull request events
+          else if (context.eventName === 'pull_request' || context.eventName === 'pull_request_target') {
+            branchName = context.payload.pull_request.head.ref;
+          }
+          // For workflow_dispatch events with inputs
+          else if (context.eventName === 'workflow_dispatch' && context.payload.inputs && context.payload.inputs.branch) {
+            branchName = context.payload.inputs.branch;
+          }
+          // Fallback to the ref without the prefix if we can't determine it another way
+          else if (context.ref) {
+            branchName = context.ref.replace('refs/heads/', '').replace('refs/tags/', '');
+          }
+          
           const issueTitle = 'Security Vulnerabilities Found';
           const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
-          ## Security Scan Results
+          ## ⚠️ Security Scan Results
 
           Vulnerabilities were detected in the security scan.
+          
+          **Workflow Context:**
+          - Workflow: ${context.workflow}
+          - Job: ${context.job}
+          - Branch: ${branchName}
+          - Ref: ${commitSha.substring(0, 7)}
+          - Event Name: ${context.eventName}
 
           <details>
           <summary>Please review the attached report for details.</summary>
