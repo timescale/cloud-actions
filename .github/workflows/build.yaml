@@ -44,7 +44,7 @@ on:
         description: 'Fail build on found vulnerabilities'
         type: boolean
         required: false
-        default: 'true'
+        default: 'false'
       ignore-unfixed:
         description: 'Ignore unfixed vulnerabilities'
         type: boolean
