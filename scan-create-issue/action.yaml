@@ -60,8 +60,34 @@ runs:
             });
           }
           
+          // Search for existing issues with our identifier
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: ['security', 'vulnerability']
+          });
+          
+          // Find issue containing our identifier
+          const existingIssue = issues.find(issue => {
+            return issue.body && issue.body.includes('${{ inputs.issue-identifier }}');
+          });
+          
           if (!hasVulnerabilities) {
-            console.log("No vulnerabilities found. Skipping issue creation.");
+            console.log("No vulnerabilities found.");
+            // If an issue exists and there are no vulnerabilities, close it
+            if (existingIssue) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                state: 'closed',
+                state_reason: 'completed'
+              });
+              console.log(`Closed issue #${existingIssue.number} as vulnerabilities are resolved.`);
+            } else {
+              console.log("No existing issue to close.");
+            }
             return;
           }
           
@@ -117,19 +143,6 @@ runs:
           </details>
           `;
 
-          // Search for existing issues with our identifier
-          const { data: issues } = await github.rest.issues.listForRepo({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            labels: ['security', 'vulnerability']
-          });
-          
-          // Find issue containing our identifier
-          const existingIssue = issues.find(issue => {
-            return issue.body && issue.body.includes('${{ inputs.issue-identifier }}');
-          });
-          
           if (existingIssue) {
             // Update existing issue
             await github.rest.issues.update({
