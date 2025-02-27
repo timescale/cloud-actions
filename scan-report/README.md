@@ -12,10 +12,11 @@ Composite action to scan a repository for vulnerabilities and create or update i
         report-filename: 'trivy-scan.report' #REQUIRED
         identifier: 'SECURITY_SCAN_RESULTS_IDENTIFIER' #REQUIRED
         registry: <registry-name>/<image-name> #REQUIRED
-        tags: | #REQUIRED
+        tags: | #OPTIONAL
           <tag1>
           <tag2>
           # ...
+        digest: <digest> #OPTIONAL
         report-format: table #OPTIONAL (Default to table)
         severity: CRITICAL #OPTIONAL (Default to CRITICAL,HIGH)
         fail-on-vulns: false #OPTIONAL (Default to true)

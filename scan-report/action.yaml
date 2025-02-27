@@ -15,7 +15,12 @@ inputs:
     required: true
   tags:
     description: 'List of image tag'
-    required: true
+    required: false
+    default: ''
+  digest:
+    description: 'Image digest'
+    required: false
+    default: ''
   report-format:
     description: 'Report format (sarif, json, table)'
     required: false

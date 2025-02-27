@@ -8,8 +8,7 @@ Scan image for vulnerabilities
       with:
         report-name: 'trivy-image' #OPTIONAL (Default to trivy-image)
         report-filename: 'trivy-image.report' #OPTIONAL (Default to trivy-image.report)
-        registry: <registry-name>/<image-name> #REQUIRED
-        tag: <tag> #REQUIRED
+        image-ref: <registry-name>/<image-name>:<tag> #REQUIRED
         report-format: table #OPTIONAL (Default to table)
         severity: CRITICAL #OPTIONAL (Default to CRITICAL,HIGH)
         ignore-unfixed: true #OPTIONAL (Default to true)
@@ -72,8 +71,7 @@ jobs:
         with:
           report-name: ${{ env.REPORT_NAME }}
           report-filename: ${{ env.REPORT_FILENAME }}
-          registry: ${{ env.REGISTRY }}/<your-repo-name>
-          tag: ${{ env.TAG }}
+          image-ref: ${{ env.REGISTRY }}/<your-repo-name>:${{ env.TAG }}
           report-format: table
           severity: CRITICAL,HIGH
           fail-on-vulns: true
@@ -141,8 +139,7 @@ jobs:
         id: scan
         with:
           report-name: ${{ env.REPORT_NAME }}
-          registry: ${{ env.REGISTRY }}/<your-repo-name>
-          tag: ${{ env.TAG }}
+          image-ref: ${{ env.REGISTRY }}/<your-repo-name>:${{ env.TAG }}
           report-format: table
           severity: CRITICAL,HIGH
           fail-on-vulns: true
