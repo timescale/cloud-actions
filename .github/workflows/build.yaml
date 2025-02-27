@@ -159,14 +159,16 @@ jobs:
       - name: Scan Image
         uses: timescale/cloud-actions/scan-report@main
         with:
-          report-name: 'image-scan-${{ inputs.target }}-${{ matrix.platform }}'
-          report-filename: 'image-scan-${{ inputs.target }}-${{ matrix.platform }}.report'
-          identifier: '${{ inputs.registry }}-${{ inputs.target }}-${{ matrix.platform }}'
+          report-name: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}'
+          report-filename: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}.report'
+          identifier: '${{ inputs.registry }}-${{ inputs.docker_target }}-${{ matrix.platform }}'
           registry: ${{ inputs.registry }}
           digest: "${{ steps.build.outputs.digest }}"
           severity: ${{ inputs.severity }}
           ignore-unfixed: '${{ inputs.ignore-unfixed }}'
           fail-on-vulns: '${{ inputs.fail-on-vulns }}'
+        env:
+          TRIVY_PLATFORM: linux/${{ matrix.platform }}
 
       - name: Export digest
         run: |
