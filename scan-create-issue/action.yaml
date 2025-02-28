@@ -24,22 +24,42 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          const issueTitle = 'Security Vulnerabilities Found';
-          const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
-          ## Security Scan Results
-
-          Vulnerabilities were detected in the security scan.
-
-          <details>
-          <summary>Please review the attached report for details.</summary>
-
-          \`\`\`
-          ${require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8')}
-          \`\`\`
-
-          </details>
-          `;
-
+          const fs = require('fs');
+          const reportContent = fs.readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          
+          // Check if vulnerabilities were found
+          let hasVulnerabilities = false;
+          
+          try {
+            // Try to parse as JSON first (could be standard JSON format or SARIF)
+            const jsonReport = JSON.parse(reportContent);
+          
+            // Check if it's SARIF format (has $schema or version fields and runs array)
+            if ((jsonReport.$schema && jsonReport.$schema.includes('sarif')) || 
+                (jsonReport.version && jsonReport.runs)) {
+              // SARIF format - check runs[].results array
+              hasVulnerabilities = jsonReport.runs && 
+                                  jsonReport.runs.some(run => 
+                                    run.results && run.results.length > 0
+                                  );
+            } 
+            // Check if it's Trivy JSON format
+            else if (jsonReport.Results) {
+              // For Trivy JSON format, check if any Results have Vulnerabilities
+              hasVulnerabilities = jsonReport.Results.some(result => 
+                result.Vulnerabilities && result.Vulnerabilities.length > 0
+              );
+            }
+          } catch (e) {
+            // Not JSON format, assume text/table format
+            // Find all "Total: N" occurrences and check if any N > 0
+            const totalMatches = reportContent.match(/Total:\s+(\d+)/g) || [];
+            hasVulnerabilities = totalMatches.some(match => {
+              const count = parseInt(match.replace('Total:', '').trim());
+              return count > 0;
+            });
+          }
+          
           // Search for existing issues with our identifier
           const { data: issues } = await github.rest.issues.listForRepo({
             owner: context.repo.owner,
@@ -53,6 +73,76 @@ runs:
             return issue.body && issue.body.includes('${{ inputs.issue-identifier }}');
           });
           
+          if (!hasVulnerabilities) {
+            console.log("No vulnerabilities found.");
+            // If an issue exists and there are no vulnerabilities, close it
+            if (existingIssue) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                state: 'closed',
+                state_reason: 'completed'
+              });
+              console.log(`Closed issue #${existingIssue.number} as vulnerabilities are resolved.`);
+            } else {
+              console.log("No existing issue to close.");
+            }
+            return;
+          }
+          
+          console.log("Vulnerabilities found. Creating or updating issue.");
+          
+          // Get the correct commit SHA - use PR head SHA if available
+          let commitSha;
+          if (context.payload.pull_request) {
+            commitSha = context.payload.pull_request.head.sha;
+          } else {
+            commitSha = context.sha;
+          }
+          
+          let branchName = "";
+  
+          // For push events, the ref is in the format refs/heads/branch-name
+          if (context.eventName === 'push') {
+            branchName = context.ref.replace('refs/heads/', '');
+          }
+          // For pull request events
+          else if (context.eventName === 'pull_request' || context.eventName === 'pull_request_target') {
+            branchName = context.payload.pull_request.head.ref;
+          }
+          // For workflow_dispatch events with inputs
+          else if (context.eventName === 'workflow_dispatch' && context.payload.inputs && context.payload.inputs.branch) {
+            branchName = context.payload.inputs.branch;
+          }
+          // Fallback to the ref without the prefix if we can't determine it another way
+          else if (context.ref) {
+            branchName = context.ref.replace('refs/heads/', '').replace('refs/tags/', '');
+          }
+          
+          const issueTitle = 'Security Vulnerabilities Found';
+          const issueBody = `<!-- ${{ inputs.issue-identifier }} -->
+          ## ⚠️ Security Scan Results
+
+          Vulnerabilities were detected in the security scan.
+          
+          **Workflow Context:**
+          - Workflow: ${context.workflow}
+          - Job: ${context.job}
+          - Branch: ${branchName}
+          - Ref: ${commitSha.substring(0, 7)}
+          - Event Name: ${context.eventName}
+
+          <details>
+          <summary>Please review the attached report for details.</summary>
+
+          \`\`\`
+          ${reportContent}
+          \`\`\`
+
+          </details>
+          `;
+
           if (existingIssue) {
             // Update existing issue
             await github.rest.issues.update({

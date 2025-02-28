@@ -36,7 +36,41 @@ runs:
             return;
           };
           
-          const reportContent = require('fs').readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          const fs = require('fs');
+          const reportContent = fs.readFileSync('./vulnerability-reports/${{ inputs.report-filename }}', 'utf8');
+          
+          // Check if vulnerabilities were found
+          let hasVulnerabilities = false;
+          
+          try {
+            // Try to parse as JSON first (could be standard JSON format or SARIF)
+            const jsonReport = JSON.parse(reportContent);
+          
+            // Check if it's SARIF format (has $schema or version fields and runs array)
+            if ((jsonReport.$schema && jsonReport.$schema.includes('sarif')) || 
+                (jsonReport.version && jsonReport.runs)) {
+              // SARIF format - check runs[].results array
+              hasVulnerabilities = jsonReport.runs && 
+                                  jsonReport.runs.some(run => 
+                                    run.results && run.results.length > 0
+                                  );
+            } 
+            // Check if it's Trivy JSON format
+            else if (jsonReport.Results) {
+              // For Trivy JSON format, check if any Results have Vulnerabilities
+              hasVulnerabilities = jsonReport.Results.some(result => 
+                result.Vulnerabilities && result.Vulnerabilities.length > 0
+              );
+            }
+          } catch (e) {
+            // Not JSON format, assume text/table format
+            // Find all "Total: N" occurrences and check if any N > 0
+            const totalMatches = reportContent.match(/Total:\s+(\d+)/g) || [];
+            hasVulnerabilities = totalMatches.some(match => {
+              const count = parseInt(match.replace('Total:', '').trim());
+              return count > 0;
+            });
+          }
           
           // Get the correct commit SHA - use PR head SHA if available
           let commitSha;
@@ -45,22 +79,36 @@ runs:
           } else {
             commitSha = context.sha;
           }
+          let commentBody;
           
-          const commentBody = `<!-- ${{ inputs.comment-identifier }} -->
-          ## Security Scan Completed
-          
-          Scanning was performed on commit: ${commitSha.substring(0, 7)}.
-          Please, review vulnerabilities scan report before merging.
-          
-          <details>
-          <summary>Click to expand vulnerability report</summary>
-          
-          \`\`\`
-          ${reportContent}
-          \`\`\`
-          
-          </details>
-          `;
+          if (hasVulnerabilities) {
+            // If vulnerabilities were found, include the full report
+            commentBody = `<!-- ${{ inputs.comment-identifier }} -->
+            ## ⚠️ Security Scan Results
+
+            Vulnerabilities were detected in the security scan.
+
+            <details>
+            <summary>Click to expand vulnerability report</summary>
+
+            \`\`\`
+            ${reportContent}
+            \`\`\`
+
+            </details>
+            
+            Scanning was performed on commit: ${commitSha.substring(0, 7)}.
+            `;
+          } else {
+            // If no vulnerabilities were found, just indicate success
+            commentBody = `<!-- ${{ inputs.comment-identifier }} -->
+            ## ✅ Security Scan Results
+
+            Security scan completed successfully. No vulnerabilities were found!
+            
+            Scanning was performed on commit: ${commitSha.substring(0, 7)}.
+            `;
+          }
           
           // Get all comments on the PR
           const { data: comments } = await github.rest.issues.listComments({
