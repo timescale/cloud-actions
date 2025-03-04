@@ -35,6 +35,21 @@ on:
         type: boolean
         default: false
         description: "Multiplatform build"
+      severity:
+        description: 'Severity level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)'
+        type: string
+        required: false
+        default: 'CRITICAL,HIGH'
+      fail-on-vulns:
+        description: 'Fail build on found vulnerabilities'
+        type: boolean
+        required: false
+        default: false
+      ignore-unfixed:
+        description: 'Ignore unfixed vulnerabilities'
+        type: boolean
+        required: false
+        default: true
     secrets:
       API_TOKEN_GITHUB:
         required: true
@@ -68,6 +83,19 @@ jobs:
           registry: ${{ inputs.registry }}
           target: ${{ inputs.docker_target }}
           file: ${{ inputs.dockerfile_path }}
+
+      - name: Scan Image
+        uses: timescale/cloud-actions/scan-report@main
+        with:
+          report-name: 'image-scan'
+          report-filename: 'image-scan.report'
+          identifier: ${{ inputs.registry }}
+          registry: ${{ inputs.registry }}
+          tags: |
+            ${{ inputs.tags }}
+          severity: ${{ inputs.severity }}
+          ignore-unfixed: '${{ inputs.ignore-unfixed }}'
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
 
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
@@ -127,6 +155,20 @@ jobs:
             GOOS=linux
             GOARCH=${{ matrix.platform }}
             BPF_TARGET=${{ matrix.platform }}
+
+      - name: Scan Image
+        uses: timescale/cloud-actions/scan-report@main
+        with:
+          report-name: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}'
+          report-filename: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}.report'
+          identifier: '${{ inputs.registry }}-${{ inputs.docker_target }}-${{ matrix.platform }}'
+          registry: ${{ inputs.registry }}
+          digest: "${{ steps.build.outputs.digest }}"
+          severity: ${{ inputs.severity }}
+          ignore-unfixed: '${{ inputs.ignore-unfixed }}'
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
+        env:
+          TRIVY_PLATFORM: linux/${{ matrix.platform }}
 
       - name: Export digest
         run: |
