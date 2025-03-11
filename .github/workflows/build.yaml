@@ -50,6 +50,11 @@ on:
         type: boolean
         required: false
         default: true
+      skip-scan:
+        description: 'Skip vulnerabilities scan'
+        type: boolean
+        required: false
+        default: false
     secrets:
       API_TOKEN_GITHUB:
         required: true
@@ -86,6 +91,7 @@ jobs:
 
       - name: Scan Image
         uses: timescale/cloud-actions/scan-report@main
+        if: ${{ ! inputs.skip-scan }}
         with:
           report-name: 'image-scan'
           report-filename: 'image-scan.report'
@@ -95,8 +101,7 @@ jobs:
             ${{ inputs.tags }}
           severity: ${{ inputs.severity }}
           ignore-unfixed: '${{ inputs.ignore-unfixed }}'
-          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
-
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'        
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
     if: ${{ inputs.multiplatform }}
@@ -158,6 +163,7 @@ jobs:
 
       - name: Scan Image
         uses: timescale/cloud-actions/scan-report@main
+        if: ${{ ! inputs.skip-scan }}
         with:
           report-name: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}'
           report-filename: 'image-scan-${{ inputs.docker_target }}-${{ matrix.platform }}.report'
