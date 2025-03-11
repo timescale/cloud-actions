@@ -1,0 +1,53 @@
+name: 'sc CLI Install'
+description: 'Install sc CLI if not already installed'
+inputs:
+  aws-access-key-id:
+    description: 'AWS Key ID secret name'
+    required: true
+    default: ''
+  aws-secret-access-key:
+    description: 'AWS Access Key secret name'
+    required: true
+    default: ''
+  gh-token:
+    description: 'GH token'
+    required: true
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set AWS credentials
+      # NOTE WELL: the ECR region is hard-coded to us-east-1 as this is unlikely to change.
+      run: |
+          export AWS_ACCESS_KEY_ID=${{ inputs.aws-access-key-id }}
+          export AWS_SECRET_ACCESS_KEY=${{ inputs.aws-secret-access-key }}
+          export AWS_DEFAULT_REGION='us-east-1'
+      shell: bash
+    
+    - name: Check if 'sc' is installed
+      id: check-sc
+      run: |
+        if command -v sc &>/dev/null; then
+          echo "SC is already installed."
+          echo "installed=true" >> $GITHUB_ENV
+        else
+          echo "SC is not installed."
+          echo "installed=false" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - name: Checkout
+      if: env.installed == 'false'
+      uses: actions/checkout@v4    
+      with:
+        repository: 'timescale/savannah-client'
+        token: ${{ input.gh-token }}
+
+    - name: Install sc CLI
+      if: env.installed == 'false'
+      run: |
+        cd savannah-client
+        chmod +x install.sh
+        ./install.sh
+      shell: bash
