@@ -17,14 +17,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set AWS credentials
-      # NOTE WELL: the ECR region is hard-coded to us-east-1 as this is unlikely to change.
-      run: |
-          export AWS_ACCESS_KEY_ID=${{ inputs.aws-access-key-id }}
-          export AWS_SECRET_ACCESS_KEY=${{ inputs.aws-secret-access-key }}
-          export AWS_DEFAULT_REGION='us-east-1'
-      shell: bash
-    
     - name: Check if 'sc' is installed
       id: check-sc
       run: |
@@ -42,12 +34,15 @@ runs:
       uses: actions/checkout@v4    
       with:
         repository: 'timescale/savannah-client'
-        token: ${{ input.gh-token }}
+        token: ${{ inputs.gh-token }}
 
     - name: Install sc CLI
       if: env.installed == 'false'
       run: |
-        cd savannah-client
         chmod +x install.sh
         ./install.sh
       shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_DEFAULT_REGION: 'us-east-1'
