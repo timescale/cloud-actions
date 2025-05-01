@@ -1,0 +1,94 @@
+---
+name: generate debian package
+description: Generates a debian package using nfpm
+
+inputs:
+  arch:
+    default: "amd64"
+    description: target architecture (e.g., amd64, arm64)
+    required: true
+  workdir:
+    description: working directory
+    required: false
+    default: "."
+  upload-artifact-name:
+    description: name of the artifact to upload
+    required: false
+  nfpm-config:
+    description: nfpm config file contents
+    required: false
+  nfpm-version:
+    description: nfpm version
+    required: false
+    default: "2.42.0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install nfpm
+      shell: bash
+      env:
+        PLATFORM: ${{ inputs.arch }}
+        NFPM_VERSION: ${{ inputs.nfpm-version }}
+      run: |
+        set -xeu
+        curl -sLO https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_${PLATFORM}.deb
+        dpkg -i nfpm_${NFPM_VERSION}_${PLATFORM}.deb
+
+    - name: Generate debian package
+      if: ${{ inputs.nfpm-config != '' }}
+      shell: bash
+      env:
+        NFPM_CONFIG: ${{ inputs.nfpm-config }}
+        ARCH: ${{ inputs.arch }}
+      id: nfpm
+      working-directory: ${{ inputs.workdir }}
+      run: |-
+        set -xeu
+        echo "${NFPM_CONFIG}" > nfpm.yaml
+        nfpm pkg --packager deb --target ./
+        PACKAGE_NAME=$(ls timescaledb*deb)
+
+        if [ -z "${PACKAGE_NAME}" ]; then
+          echo "Could not find package name"
+          exit 2
+        fi
+
+        echo "package=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+
+    - name: generate summary
+      if: ${{ inputs.nfpm-config != '' }}
+      shell: bash
+      working-directory: ${{ inputs.workdir }}
+      env:
+        NFPM_CONFIG: ${{ inputs.nfpm-config }}
+        ARCH: ${{ inputs.arch }}
+      run: |-
+        set -xeu
+        PACKAGE_NAME=$(ls timescaledb*deb)
+
+        cat <<EOF > $GITHUB_STEP_SUMMARY
+        ## Package for ${ARCH}
+
+        Generated package: \`${PACKAGE_NAME}\`
+        Package contents:
+        \`\`\`
+        $(dpkg -c ${PACKAGE_NAME})
+        \`\`\`
+
+        NFpm config:
+        \`\`\`yaml
+        $(cat nfpm.yaml)
+        \`\`\`
+        EOF
+
+        if [ "${{ inputs.upload-artifact-name }}" != "" ]; then
+          echo Artifact name: \`${{ inputs.upload-artifact-name }}\` >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload deb as Artifact for ${{ inputs.arch }}
+      if: ${{ inputs.upload-artifact-name != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.upload-artifact-name }}
+        path: "${{ inputs.workdir }}/${{ steps.nfpm.outputs.package }}"
