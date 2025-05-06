@@ -110,10 +110,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ["amd64"]
+        platform: ["amd64", "arm64"]
         include:
           - platform: amd64
             runs_on: dev-us-east-1
+          - platform: arm64
+            runs_on: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
