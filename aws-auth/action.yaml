@@ -1,0 +1,31 @@
+name: 'AWS Auth Action'
+description: 'Generate ~/.aws/config and ~/.aws/credentials for multiple profiles'
+inputs:
+  profiles:
+    description: 'JSON array of AWS profiles, each containing profile, region, aws_access_key_id, and aws_secret_access_key'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Create AWS Config and Credentials
+      id: create-aws-config
+      shell: bash
+      run: |
+        mkdir -p ~/.aws
+        echo "" > ~/.aws/config
+        echo "" > ~/.aws/credentials
+
+        profiles=$(echo '${{ inputs.profiles }}' | jq -c '.[]')
+        for profile in $profiles; do
+          name=$(echo $profile | jq -r '.profile')
+          region=$(echo $profile | jq -r '.region')
+          aws_access_key_id=$(echo $profile | jq -r '.aws_access_key_id')
+          aws_secret_access_key=$(echo $profile | jq -r '.aws_secret_access_key')
+
+          echo "[profile $name]" >> ~/.aws/config
+          echo "region = $region" >> ~/.aws/config
+
+          echo "[$name]" >> ~/.aws/credentials
+          echo "aws_access_key_id = $aws_access_key_id" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $aws_secret_access_key" >> ~/.aws/credentials
+        done
