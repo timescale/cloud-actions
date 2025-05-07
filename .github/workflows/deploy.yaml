@@ -163,6 +163,7 @@ jobs:
           helm upgrade ${{ inputs.chart_name }} ${{ inputs.chart_path }} --install --wait --atomic --cleanup-on-fail \
             --kubeconfig=./kubeconfig_${{ inputs.env }}_${{ inputs.region }} \
             --namespace=${{ inputs.chart_namespace }} \
+            --create-namespace \
             --values=./${{ inputs.chart_path }}/values/${{ inputs.env }}.yaml \
             --timeout ${{ inputs.helm_timeout }} \
             ${region_values} \
