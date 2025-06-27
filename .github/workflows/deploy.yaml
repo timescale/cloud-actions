@@ -112,6 +112,9 @@ on:
       ORG_KUBECONFIG_PROD_AP_SOUTH_1:
         required: false
         description: 'Kubeconfig secret'
+      ORG_KUBECONFIG_DEV_AZ_EASTUS:
+        required: false
+        description: 'Kubeconfig secret'
 jobs:
   # Deploy by one region
   deploy_on_region:
