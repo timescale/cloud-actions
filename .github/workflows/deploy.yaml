@@ -130,7 +130,6 @@ jobs:
       uses: timescale/cloud-actions/ecr-k8s-login@main
       env:
         ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
-        ORG_KUBECONFIG_DEV_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_DEV_US_WEST_2 }}
         ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
         ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
         ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
@@ -144,6 +143,7 @@ jobs:
         ORG_KUBECONFIG_PROD_CA_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_CA_CENTRAL_1 }}
         ORG_KUBECONFIG_PROD_SA_EAST_1: ${{ secrets.ORG_KUBECONFIG_PROD_SA_EAST_1 }}
         ORG_KUBECONFIG_PROD_AP_SOUTH_1: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTH_1 }}
+        ORG_KUBECONFIG_DEV_AZ_EASTUS: ${{ secrets.ORG_KUBECONFIG_DEV_AZ_EASTUS }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
