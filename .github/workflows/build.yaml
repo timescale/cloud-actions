@@ -159,6 +159,7 @@ jobs:
           outputs: type=image,name=${{ inputs.registry }},push-by-digest=true,name-canonical=true,push=true
           secrets: |
             gh_token=${{ secrets.API_TOKEN_GITHUB }}
+            GOPROXY=${{ secrets.GOPROXY }}
           build-args: |
             GOOS=linux
             GOARCH=${{ matrix.platform }}
