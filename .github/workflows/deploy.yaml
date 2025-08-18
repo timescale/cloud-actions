@@ -124,7 +124,7 @@ jobs:
     steps:
 
     - name: Setup | Checkout submodules
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
@@ -185,7 +185,7 @@ jobs:
     steps:
 
     - name: Setup | Checkout submodules
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
@@ -243,7 +243,7 @@ jobs:
     steps:
 
     - name: Setup | Checkout submodules
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}

@@ -72,7 +72,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
           token: ${{ secrets.API_TOKEN_GITHUB }}
@@ -118,7 +118,7 @@ jobs:
             runs_on: arm64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
           token: ${{ secrets.API_TOKEN_GITHUB }}
