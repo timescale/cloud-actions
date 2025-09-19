@@ -47,6 +47,10 @@ on:
         type: string
         default: '5m'
         description: 'Extra arguments to specify timeout for help upgrades'
+      repository:
+        description: 'Repository to checkout'
+        type: string
+        required: false
 
     secrets:
       API_TOKEN_GITHUB:
@@ -129,6 +133,7 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
@@ -191,6 +196,7 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
@@ -250,6 +256,7 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
