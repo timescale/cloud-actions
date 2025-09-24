@@ -55,6 +55,14 @@ on:
         type: boolean
         required: false
         default: false
+      repository:
+        description: 'Repository to checkout'
+        type: string
+        required: false
+      ref:
+        description: 'Git ref to checkout'
+        type: string
+        required: false
     secrets:
       API_TOKEN_GITHUB:
         required: true
@@ -74,6 +82,8 @@ jobs:
       - name: Setup | Checkout
         uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.ref || github.ref }}
           submodules: true
           token: ${{ secrets.API_TOKEN_GITHUB }}
 
@@ -102,7 +112,7 @@ jobs:
             ${{ inputs.tags }}
           severity: ${{ inputs.severity }}
           ignore-unfixed: '${{ inputs.ignore-unfixed }}'
-          fail-on-vulns: '${{ inputs.fail-on-vulns }}'        
+          fail-on-vulns: '${{ inputs.fail-on-vulns }}'
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
     if: ${{ inputs.multiplatform }}
@@ -120,6 +130,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.ref }}
+          repository: ${{ inputs.repository || github.repository }}
           submodules: true
           token: ${{ secrets.API_TOKEN_GITHUB }}
 

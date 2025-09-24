@@ -47,6 +47,14 @@ on:
         type: string
         default: '5m'
         description: 'Extra arguments to specify timeout for help upgrades'
+      repository:
+        description: 'Repository to checkout'
+        type: string
+        required: false
+      ref:
+        description: 'Git ref to checkout'
+        type: string
+        required: false
 
     secrets:
       API_TOKEN_GITHUB:
@@ -117,7 +125,7 @@ on:
         description: 'Kubeconfig secret'
       ORG_KUBECONFIG_PROD_AZ_EASTUS:
         required: false
-        description: 'Kubeconfig secret'        
+        description: 'Kubeconfig secret'
 jobs:
   # Deploy by one region
   deploy_on_region:
@@ -129,6 +137,8 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        ref: ${{ inputs.ref || github.ref }}
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
@@ -140,7 +150,7 @@ jobs:
         ORG_KUBECONFIG_DEV_AZ_EASTUS: ${{ secrets.ORG_KUBECONFIG_DEV_AZ_EASTUS }}
         ORG_KUBECONFIG_PROD: ${{ secrets.ORG_KUBECONFIG_PROD }}
         ORG_KUBECONFIG_PROD_EU_WEST_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_WEST_1 }}
-        ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}        
+        ORG_KUBECONFIG_PROD_US_WEST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_WEST_2 }}
         ORG_KUBECONFIG_PROD_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_PROD_EU_CENTRAL_1 }}
         ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_AP_SOUTHEAST_2 }}
         ORG_KUBECONFIG_PROD_US_EAST_2: ${{ secrets.ORG_KUBECONFIG_PROD_US_EAST_2 }}
@@ -191,6 +201,8 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        ref: ${{ inputs.ref || github.ref }}
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
@@ -250,6 +262,8 @@ jobs:
     - name: Setup | Checkout submodules
       uses: actions/checkout@v4
       with:
+        ref: ${{ inputs.ref || github.ref }}
+        repository: ${{ inputs.repository || github.repository }}
         submodules: true
         token: ${{ secrets.API_TOKEN_GITHUB }}
 
