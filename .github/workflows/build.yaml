@@ -25,6 +25,11 @@ on:
         type: string
         default: ""
         description: "Dockerfile target"
+      docker_context:
+        required: false
+        type: string
+        default: "."
+        description: "Docker build context"
       runner:
         required: false
         type: string
@@ -88,7 +93,7 @@ jobs:
           token: ${{ secrets.API_TOKEN_GITHUB }}
 
       - name: Docker | Build and Push
-        uses: timescale/cloud-actions/build-push@main
+        uses: timescale/cloud-actions/build-push@mpeveler/feat-docker-context
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -96,9 +101,11 @@ jobs:
           tags: |
             ${{ inputs.tags }}
           registry: ${{ inputs.registry }}
+          context: ${{ inputs.docker_context }}
           target: ${{ inputs.docker_target }}
           file: ${{ inputs.dockerfile_path }}
           gh-token: ${{ secrets.API_TOKEN_GITHUB }}
+
 
       - name: Scan Image
         uses: timescale/cloud-actions/scan-report@main
@@ -163,7 +170,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ inputs.docker_context}}
           file: ${{ inputs.dockerfile_path }}
           platforms: linux/${{ matrix.platform }}
           target: ${{ inputs.docker_target }}

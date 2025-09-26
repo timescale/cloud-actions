@@ -6,6 +6,7 @@ for tag in ${tags}; do
 
     # If there is a target we use it
     echo "Building ${registry}:${tag}"
+    cd "${context}" || exit 1
     if [[ ${target} = '' ]]; then
         docker build --secret id=gh_token,env=gh_token -t ${registry}:${tag} -f ${dockerfile} .
     else
