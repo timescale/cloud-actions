@@ -176,6 +176,10 @@ jobs:
         regions: ${{ inputs.region }}
         env:  ${{ inputs.env }}
 
+    - name: Build Helm Chart Dependencies
+      if: ${{ inputs.build_chart_dependencies }}
+      run: |
+        helm dependency build ${{ inputs.chart_path }}
     - name: Helm Upgrade
       run: |
           region_values=''
@@ -292,6 +296,10 @@ jobs:
         regions: ${{ matrix.region }}
         env:  ${{ inputs.env }}
 
+    - name: Build Helm Chart Dependencies
+      if: ${{ inputs.build_chart_dependencies }}
+      run: |
+        helm dependency build ${{ inputs.chart_path }}
     - name: Helm Upgrade
       run: |
           echo "####### Helm upgrade for ${{ inputs.env }}_${{ matrix.region }} ####### "
