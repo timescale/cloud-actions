@@ -24,6 +24,8 @@ runs:
   steps:
     - name: Configure and Install Rust
       shell: bash
+      env: 
+        RUSTUP_INIT_SKIP_PATH_CHECK: "true"
       run: |
         set -eux
 
