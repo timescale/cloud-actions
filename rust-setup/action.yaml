@@ -14,6 +14,10 @@ inputs:
     description: 'Path for RUSTUP_HOME'
     required: false
     default: '${{ runner.temp }}/.rustup'
+  chown-user:
+    description: 'Optional user:group to chown the Rust directories to. If not set, no chown is performed.'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -35,8 +39,13 @@ runs:
         curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
         
         rustup toolchain install "${{ inputs.rust-version }}"
-        
+
         rustup default "${{ inputs.rust-version }}"
+
+        if [ -n "${{ inputs.chown-user }}" ]; then
+          echo "Changing ownership of Rust directories to user: ${{ inputs.chown-user }}"
+          chown -R "${{ inputs.chown-user }}" "${CARGO_HOME}" "${RUSTUP_HOME}"
+        fi
         
         echo "--- Verification ---"
         echo "Rustup is at: $(which rustup)"

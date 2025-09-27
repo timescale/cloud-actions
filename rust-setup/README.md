@@ -18,4 +18,9 @@ How to use it:
         # (Optional) Override the default path for RUSTUP_HOME.
         # Defaults to a temporary directory provided by the runner.
         rustup-home: '${{ runner.temp }}/.rustup' # OPTIONAL
+
+        # (Optional) Change permission for the $CARGO_HOME and 
+        # $RUSTUP_HOME directories
+        # Only run for non-empty values.
+        chown-user: '' # OPTIONAL
 ```
