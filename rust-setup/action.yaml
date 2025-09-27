@@ -1,0 +1,44 @@
+name: 'Setup Rust Environment'
+description: 'Installs a specific Rust toolchain and configures the environment for the job'
+
+inputs:
+  rust-version:
+    description: 'The Rust toolchain version to install (e.g., 1.82.0)'
+    required: true
+    default: 'stable'
+  cargo-home:
+    description: 'Path for CARGO_HOME'
+    required: false
+    default: '${{ runner.temp }}/.cargo'
+  rustup-home:
+    description: 'Path for RUSTUP_HOME'
+    required: false
+    default: '${{ runner.temp }}/.rustup'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure and Install Rust
+      shell: bash
+      run: |
+        set -eux
+
+        echo "CARGO_HOME=${{ inputs.cargo-home }}" >> $GITHUB_ENV
+        echo "RUSTUP_HOME=${{ inputs.rustup-home }}" >> $GITHUB_ENV
+        
+        echo "${{ inputs.cargo-home }}/bin" >> $GITHUB_PATH
+        
+        export CARGO_HOME="${{ inputs.cargo-home }}"
+        export RUSTUP_HOME="${{ inputs.rustup-home }}"
+        export PATH="${CARGO_HOME}/bin:$PATH"
+
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
+        
+        rustup toolchain install "${{ inputs.rust-version }}"
+        
+        rustup default "${{ inputs.rust-version }}"
+        
+        echo "--- Verification ---"
+        echo "Rustup is at: $(which rustup)"
+        echo "Cargo is at: $(which cargo)"
+        rustup show
