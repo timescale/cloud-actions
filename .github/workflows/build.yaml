@@ -93,7 +93,7 @@ jobs:
           token: ${{ secrets.API_TOKEN_GITHUB }}
 
       - name: Docker | Build and Push
-        uses: timescale/cloud-actions/build-push@mpeveler/feat-docker-context
+        uses: timescale/cloud-actions/build-push@main
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -105,7 +105,6 @@ jobs:
           target: ${{ inputs.docker_target }}
           file: ${{ inputs.dockerfile_path }}
           gh-token: ${{ secrets.API_TOKEN_GITHUB }}
-
 
       - name: Scan Image
         uses: timescale/cloud-actions/scan-report@main
