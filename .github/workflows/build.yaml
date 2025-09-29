@@ -25,6 +25,11 @@ on:
         type: string
         default: ""
         description: "Dockerfile target"
+      docker_context:
+        required: false
+        type: string
+        default: "."
+        description: "Docker build context"
       runner:
         required: false
         type: string
@@ -96,6 +101,7 @@ jobs:
           tags: |
             ${{ inputs.tags }}
           registry: ${{ inputs.registry }}
+          context: ${{ inputs.docker_context }}
           target: ${{ inputs.docker_target }}
           file: ${{ inputs.dockerfile_path }}
           gh-token: ${{ secrets.API_TOKEN_GITHUB }}
@@ -163,7 +169,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ inputs.docker_context}}
           file: ${{ inputs.dockerfile_path }}
           platforms: linux/${{ matrix.platform }}
           target: ${{ inputs.docker_target }}

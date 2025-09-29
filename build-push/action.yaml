@@ -14,6 +14,10 @@ inputs:
   registry:
     description: 'ECR image repository'
     required: true
+  context:
+    description: 'Docker build context'
+    required: false
+    default: '.'
   file:
     description: 'Dockerfile path (e.g. build/Dockerfile)'
     required: false
@@ -43,6 +47,7 @@ runs:
 
     - name: Docker Build
       env:
+        context: ${{ inputs.context }}
         target: ${{ inputs.target }}
         tags: ${{ inputs.tags }}
         registry: ${{ inputs.registry }}

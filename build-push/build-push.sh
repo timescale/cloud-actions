@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "${context}" || exit 1
+
 for tag in ${tags}; do
     # Search-and-replace all / characters to -, which allows using github.ref_name in the tag since most branches include a / character.
     tag="${tag//\//-}"
