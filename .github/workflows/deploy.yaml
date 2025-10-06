@@ -290,6 +290,7 @@ jobs:
       env:
         ORG_KUBECONFIG_DEV: ${{ secrets.ORG_KUBECONFIG_DEV }}
         ORG_KUBECONFIG_DEV_EU_CENTRAL_1: ${{ secrets.ORG_KUBECONFIG_DEV_EU_CENTRAL_1 }}
+        ORG_KUBECONFIG_DEV_AZ_EASTUS: ${{ secrets.ORG_KUBECONFIG_DEV_AZ_EASTUS }}
       with:
         aws-access-key-id: ${{ secrets.ORG_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ORG_AWS_SECRET_ACCESS_KEY }}
