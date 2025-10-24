@@ -85,7 +85,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.repository || github.repository }}
           ref: ${{ inputs.ref || github.ref }}
@@ -140,7 +140,7 @@ jobs:
             runs_on: arm64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref || github.ref }}
           repository: ${{ inputs.repository || github.repository }}
