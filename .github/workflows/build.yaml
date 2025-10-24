@@ -119,6 +119,12 @@ jobs:
           severity: ${{ inputs.severity }}
           ignore-unfixed: '${{ inputs.ignore-unfixed }}'
           fail-on-vulns: '${{ inputs.fail-on-vulns }}'
+
+      - name: Build Summary
+        run: |
+          echo "## Docker Image Built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ inputs.registry }}:${{ inputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
   mp-build:
     name: Build multiplatform Image (${{ matrix.platform }})
     if: ${{ inputs.multiplatform }}
@@ -258,3 +264,10 @@ jobs:
             $(printf '${{ inputs.registry }}@sha256:%s ' *)
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ inputs.registry }}@sha256:%s ' *)
+
+      - name: Build Summary
+        run: |
+          echo "## Multiplatform Docker Image Built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
