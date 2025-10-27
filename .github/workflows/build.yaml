@@ -213,7 +213,7 @@ jobs:
           touch "/tmp/digests/${IMAGE_DIGEST}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: digests-${{ inputs.docker_target }}-${{ env.IMAGE_DIGEST }}
           path: /tmp/digests/*
